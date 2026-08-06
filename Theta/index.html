@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>서디언 지도</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="landing" id="landing" aria-label="Page Map 1">
+        <div class="landing-map">
+          <img src="./map.svg" alt="" draggable="false" />
+          <div class="map-main-layer" aria-hidden="true">
+            <div class="map-main-backdrop"></div>
+            <img class="map-main" src="./map-main-visible.svg" alt="" draggable="false" />
+          </div>
+        </div>
+        <button class="map-entry" id="enterMap" aria-label="지도 탐색 시작"></button>
+      </section>
+
+      <section class="map-page is-hidden" id="mapPage" aria-label="Page Map 2">
+        <div class="map-viewport" id="mapViewport">
+          <div class="map-canvas" id="mapCanvas">
+            <img class="map-art" src="./map.svg" alt="서울 지도" draggable="false" />
+            <button class="building-hotspot" id="buildingHotspot" aria-label="대림아파트 정보 보기">
+              <img class="building-hover-layer building-hover-bottom" src="./Build-1-hover-bottom.svg" alt="" draggable="false" />
+              <img class="building-hover-layer building-hover-middle" src="./Build-1-hover-middle.svg" alt="" draggable="false" />
+              <img class="building-hover-layer building-hover-top" src="./Build-1-hover-top.svg" alt="" draggable="false" />
+              <img class="building-default" src="./Build-1.svg" alt="" draggable="false" />
+            </button>
+          </div>
+        </div>
+
+        <div class="ui-layer" id="uiLayer">
+          <button class="index-trigger" id="indexTrigger" aria-expanded="false" aria-controls="indexOverlay">Index</button>
+          <p class="coordinates" id="coordinates" aria-live="polite">0.000 / 0° / -</p>
+
+          <aside class="index-overlay" id="indexOverlay" aria-hidden="true" aria-label="건물 인덱스">
+          <button class="index-row"><b>01.</b><span>주상복합<br />빌라의 층간소음</span></button>
+          <button class="index-row"><b>02.</b><span>부부싸움 일기</span></button>
+          <button class="index-row is-selected" id="daerimButton"><b>03.</b><span>올라오지 않는<br />엘리베이터</span></button>
+          <button class="index-row"><b>04.</b><span>놀이터와 자동차</span></button>
+          <button class="index-row"><b>05.</b><span>디자인 스튜디오</span></button>
+          <button class="index-row"><b>06.</b><span>구청의 권리투쟁</span></button>
+          <button class="index-row"><b>07.</b><span>사원 앞에<br />놓인 돼지 머리</span></button>
+          <button class="index-row"><b>08.</b><span>재개발 계획</span></button>
+          <button class="index-row"><b>09.</b><span>기업 갈등</span></button>
+          <button class="index-row"><b>10.</b><span>삼거리 포장마차</span></button>
+          <button class="index-collapse" id="closeIndex" aria-label="인덱스 닫기">⌃</button>
+          </aside>
+
+          <aside class="building-overlay" id="buildingOverlay" aria-hidden="true" aria-label="대림아파트 정보">
+          <button class="building-close" id="closeBuilding" aria-label="건물 정보 닫기">×</button>
+          <h1>대림아파트</h1>
+          <h2>아파트</h2>
+          <div class="building-gallery" aria-label="대림아파트 사진">
+            <img src="./build-image-1.png" alt="대림아파트 정면" />
+            <img src="./build-image-3.png" alt="대림아파트 외관" />
+            <img src="./build-image-2.png" alt="대림아파트 단지 전경" />
+            <img src="./build-image-6.png" alt="대림아파트 실내" />
+          </div>
+          <p class="building-copy">대림아파트는 XX 지역에 위치한 아파트 단지로, 2005년 5월에 준공되었다. 총 1개동, 지상 7층 규모로 구성되어 있으며, 전체 세대수는 66세대이다. 구식 복도형 구조의 아파트로, 세대 면적은 88.25㎡부터 185.49㎡까지 다양하게 구성된다.</p>
+          <div class="scenario">
+            <span>SCENARIO</span>
+            <div class="scenario-controls" aria-hidden="true"><i></i><em></em><i></i><i></i></div>
+          </div>
+          </aside>
+        </div>
+      </section>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>

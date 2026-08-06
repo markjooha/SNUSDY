@@ -1,0 +1,106 @@
+@font-face {
+  font-family: "Pretendard";
+  src: url("./PretendardVariable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+}
+
+:root { color-scheme: dark; background: #101012; color: #fff; font-family: "Pretendard", sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; overflow: hidden; background: #101012; }
+button { color: inherit; font: inherit; }
+.app, .landing, .map-page, .map-viewport { width: 100vw; height: 100vh; }
+.is-hidden { display: none !important; }
+
+.landing { position: relative; overflow: hidden; background: #101012; }
+.landing-map { position: absolute; width: 2339px; height: 2163px; left: -207px; top: -679px; }
+.landing-map img { display: block; width: 100%; height: 100%; }
+.map-entry { position: absolute; left: 30%; top: 20%; width: 40%; height: 60%; border: 0; background: transparent; cursor: pointer; }
+.landing.is-transitioning .map-entry { cursor: default; pointer-events: none; }
+.landing.is-transitioning .landing-map {
+  transition: left 1000ms cubic-bezier(.16, 1, .3, 1), top 1000ms cubic-bezier(.16, 1, .3, 1),
+    width 1000ms cubic-bezier(.16, 1, .3, 1), height 1000ms cubic-bezier(.16, 1, .3, 1);
+}
+
+.map-page { position: relative; overflow: hidden; background: #101012; }
+.map-viewport { position: absolute; inset: 0; overflow: hidden; cursor: grab; touch-action: none; user-select: none; }
+.map-viewport.is-dragging { cursor: grabbing; }
+.map-canvas { position: absolute; left: 0; top: 0; transform-origin: top left; will-change: transform, width, height; }
+.map-canvas.is-animating { transition: transform 560ms cubic-bezier(.16, 1, .3, 1), width 560ms cubic-bezier(.16, 1, .3, 1), height 560ms cubic-bezier(.16, 1, .3, 1); }
+.map-art { position: relative; z-index: 0; display: block; width: 100%; height: 100%; pointer-events: none; user-select: none; }
+
+/* Figma MAP > map_main: this shared layer moves with the base map during landing handoff. */
+.map-main-layer {
+  position: absolute;
+  left: 34.79016638%;
+  top: 40.02045944%;
+  width: 30.14651105%;
+  height: 32.58163979%;
+  z-index: 1;
+  overflow: hidden;
+  border-radius: 50%;
+  pointer-events: none;
+  user-select: none;
+}
+.map-main-backdrop { position: absolute; inset: 0; background: #101012; }
+.map-main { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; }
+
+/* Build-1 is its original transparent SVG, not a rectangular crop from the page export. */
+.building-hotspot {
+  position: absolute;
+  z-index: 3;
+  left: 51.45269431%; top: 58.15545711%; width: 2.39561719%; height: 4.10948994%;
+  padding: 0; border: 0; background: transparent; cursor: pointer; isolation: isolate; overflow: visible;
+}
+.building-hotspot img { display: block; width: 100%; height: 100%; pointer-events: none; }
+.building-hover-layer {
+  position: absolute; inset: 0; opacity: 0; transition: opacity 110ms linear;
+}
+.building-hover-middle { filter: blur(5px); }
+.building-hover-bottom { filter: blur(5px); }
+.building-hover-top { z-index: 1; }
+.building-default { position: relative; z-index: 2; }
+.building-hotspot:hover .building-hover-layer,
+.building-hotspot:focus-visible .building-hover-layer { opacity: 1; }
+.building-hotspot:hover .building-default,
+.building-hotspot:focus-visible .building-default { opacity: 0; }
+.building-hotspot:hover, .building-hotspot:focus-visible { outline: none; }
+
+.ui-layer { position: absolute; z-index: 4; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: top left; pointer-events: none; }
+.ui-layer > * { pointer-events: auto; }
+.index-trigger { position: absolute; top: 30px; left: 50px; width: 142px; height: 40px; padding: 0; border: 0; border-bottom: 1px solid rgba(255,255,255,.72); background: transparent; text-align: left; font-size: 25px; font-weight: 600; line-height: 35px; letter-spacing: -.025em; cursor: pointer; }
+.index-trigger:hover { opacity: .76; }
+.coordinates { position: absolute; left: 50px; bottom: 25px; margin: 0; font-size: 20px; font-weight: 500; line-height: 45px; letter-spacing: -.025em; }
+
+.index-overlay { position: absolute; top: 0; left: 50px; width: 220px; height: 100%; overflow: hidden; background: #000; border: 1px solid #fff; opacity: 0; visibility: hidden; transform: translateY(-100%); transition: transform 800ms cubic-bezier(.42,0,.25,1), opacity 160ms ease, visibility 0s linear 800ms; }
+.index-overlay.is-open { opacity: 1; visibility: visible; transform: translateY(0); transition: transform 800ms cubic-bezier(.42,0,.25,1), opacity 160ms ease; }
+.index-row { display: block; width: 100%; min-height: 93px; padding: 6px 13px 7px; border: 0; border-bottom: 1px solid #fff; background: #000; color: #fff; text-align: left; cursor: pointer; }
+.index-row b, .index-row span { display: block; font-size: 25px; font-weight: 600; line-height: 35px; letter-spacing: -.035em; }
+.index-row:hover, .index-row:focus-visible, .index-row.is-active { background: #151515; outline: none; }
+.index-row:nth-child(1), .index-row:nth-child(3), .index-row:nth-child(7) { min-height: 132px; }
+.index-collapse { position: absolute; right: 0; bottom: 0; left: 0; display: block; width: 100%; height: 30px; padding: 0; border: 0; background: #000; color: #fff; cursor: pointer; font-family: Arial, sans-serif; font-size: 27px; font-weight: 400; line-height: 20px; }
+
+.building-overlay { position: absolute; top: 0; right: 0; width: 420px; height: 100%; margin: 0; padding: 46px 40px; overflow: hidden; background: #000; border-left: 1px solid rgba(255,255,255,.72); opacity: 0; visibility: hidden; transform: translateX(100%); transition: transform 560ms cubic-bezier(.16,1,.3,1), opacity 180ms ease, visibility 0s linear 560ms; }
+.building-overlay.is-open { opacity: 1; visibility: visible; transform: translateX(0); transition: transform 560ms cubic-bezier(.16,1,.3,1), opacity 180ms ease; }
+.building-close { position: absolute; top: 21px; right: 21px; width: 31px; height: 31px; padding: 0; border: 0; background: transparent; color: transparent; cursor: pointer; }
+.building-close::before, .building-close::after { content: ""; position: absolute; left: 4px; top: 15px; width: 23px; height: 1px; background: #fff; transform: rotate(45deg); }
+.building-close::after { transform: rotate(-45deg); }
+.building-close:hover::before, .building-close:hover::after { background: #aaa; }
+.building-overlay h1 { margin: 0; font-size: 40px; font-weight: 600; line-height: 35px; letter-spacing: -.06em; }
+.building-overlay h2 { margin: 8px 0 26px 3px; font-size: 16px; font-weight: 600; line-height: 35px; letter-spacing: -.03em; }
+.building-gallery { display: grid; grid-template-columns: 156px 161px; grid-template-rows: 124px 124px; gap: 12px; margin-left: 5px; }
+.building-gallery img { display: block; width: 100%; height: 124px; object-fit: cover; filter: grayscale(1); }
+.building-gallery img:nth-child(3) { width: 113px; }
+.building-gallery img:nth-child(4) { width: 201px; margin-left: -33px; }
+.building-copy { margin: 35px 5px 0; font-size: 16px; font-weight: 400; line-height: 33px; letter-spacing: -.045em; text-align: justify; }
+.scenario { position: absolute; bottom: 91px; left: 86px; width: 246px; }
+.scenario > span { display: block; margin-bottom: 10px; font-family: Arial, sans-serif; font-size: 12px; font-weight: 400; line-height: 14px; }
+.scenario-controls { display: flex; align-items: center; justify-content: center; height: 47px; border: 1px solid #fff; gap: 10px; }
+.scenario-controls i { display: block; width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 27px solid #fff; }
+.scenario-controls em { height: 27px; width: 1px; margin: 0 4px; background: #fff; }
+
+@media (max-aspect-ratio: 3/4) {
+  .building-overlay { width: 100%; transform: translateX(100%); }
+  .building-overlay.is-open { transform: translateX(0); }
+}
