@@ -90,8 +90,7 @@ button { color: inherit; font: inherit; }
 
 .page7-detail { position: absolute; z-index: 1; inset: 0; margin: 0; opacity: 0; pointer-events: none; transition: opacity 550ms var(--figma-ease-in); }
 .page7-detail p, .page7-detail h1 { position: absolute; margin: 0; color: #fff; }
-.page7-theta { position: absolute; top: 128px; left: 1105px; width: 148.909px; height: 372.909px; transition: top 550ms var(--figma-ease-in); }
-.page7-logotype { top: 284.55px; left: 1179.45px; transform: translateX(-50%); font-family: "Pretendard", sans-serif; font-size: 24.747px; font-weight: 400; line-height: 44.545px; text-align: center; white-space: nowrap; transition: top 550ms var(--figma-ease-in); }
+.page7-logotype { position: absolute; top: 128px; left: 1105px; display: block; width: 148.909px; height: 372.909px; transition: top 550ms var(--figma-ease-in); }
 .page7-about-detail h1 { top: 149px; left: 1403px; transform: translateX(-50%); font-family: "Pretendard", sans-serif; font-size: 40px; font-weight: 600; line-height: normal; text-align: center; white-space: nowrap; }
 .page7-rule { position: absolute; top: 213px; left: 1327px; width: 477px; height: 2px; background: #fff; }
 .page7-description { top: 235px; left: 1327px; width: 477px; font-family: "Pretendard", sans-serif; font-size: 18px; font-weight: 400; line-height: 36px; text-align: justify; }
@@ -111,8 +110,7 @@ button { color: inherit; font: inherit; }
 .intro-page7.is-about-hovered .page7-about .page7-choice-box { background: #6e6e6e; transition: background-color 511.047ms var(--figma-gentle); }
 .intro-page7.is-about-hovered .page7-about .page7-choice-label { left: calc(50% - 5.81px); font-weight: 400; transition: left 511.047ms var(--figma-gentle), font-weight 511.047ms var(--figma-gentle); }
 .intro-page7.is-about-hovered .page7-about-detail { opacity: 1; transition: opacity 600ms var(--figma-ease-out); }
-.intro-page7.is-about-hovered .page7-theta { top: 85.05px; transition: top 600ms var(--figma-ease-out); }
-.intro-page7.is-about-hovered .page7-logotype { top: 241.59px; transition: top 600ms var(--figma-ease-out); }
+.intro-page7.is-about-hovered .page7-logotype { top: 85.05px; transition: top 600ms var(--figma-ease-out); }
 
 .intro-page7.is-map-hovered .page7-map .page7-choice-blur { background: rgba(255, 255, 255, .2); transition: background-color 511.047ms var(--figma-gentle); }
 .intro-page7.is-map-hovered .page7-map .page7-choice-box { background: #6e6e6e; transition: background-color 511.047ms var(--figma-gentle); }
