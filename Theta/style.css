@@ -6,21 +6,160 @@
   font-display: swap;
 }
 
-:root { color-scheme: dark; background: #101012; color: #fff; font-family: "Pretendard", sans-serif; }
+:root {
+  color-scheme: dark;
+  background: #101012;
+  color: #fff;
+  font-family: "Pretendard", sans-serif;
+  --landing-zoom-duration: 1600ms;
+  --landing-zoom-easing: cubic-bezier(.22,.72,.18,1);
+  --map-ui-enter-duration: 640ms;
+  --map-ui-enter-easing: cubic-bezier(.22,.72,.18,1);
+  --coordinates-enter-delay: 110ms;
+  --figma-ease-in: cubic-bezier(.42, 0, 1, 1);
+  --figma-ease-out: cubic-bezier(0, 0, .58, 1);
+  /* Figma exposes the semantic spring preset "Gentle", rather than spring constants.
+     This cubic-bezier is the web-compatible approximation used only for those variants. */
+  --figma-gentle: cubic-bezier(.22, 1, .36, 1);
+}
 * { box-sizing: border-box; }
 body { margin: 0; overflow: hidden; background: #101012; }
 button { color: inherit; font: inherit; }
 .app, .landing, .map-page, .map-viewport { width: 100vw; height: 100vh; }
 .is-hidden { display: none !important; }
 
+/* Introductory sequence — built from the individual Figma layers, on the 1920 × 1080 design grid. */
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.intro { position: relative; width: 100vw; height: 100vh; overflow: hidden; background: #101012; }
+.intro-world { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform: translate(-50%, -50%) scale(var(--intro-scale, 1)); transform-origin: center; }
+.intro-screen { position: absolute; inset: 0; display: none; overflow: hidden; background: #101012; color: #fff; }
+.intro-screen.is-active { display: block; }
+.intro-screen.is-dissolve-target {
+  z-index: 10;
+  opacity: 0;
+  transition: opacity var(--intro-motion-duration, 1ms) var(--intro-motion-easing, var(--figma-ease-out));
+}
+.intro-screen.is-dissolve-target.is-entering { opacity: 1; }
+.intro-start, .page7-choice, .about-back { position: absolute; padding: 0; border: 0; background: transparent; color: inherit; cursor: pointer; }
+
+/* Page 6 and its three transition states */
+.intro-start { inset: 0; z-index: 1; }
+.intro-page6-title {
+  position: absolute; top: calc(50% - 23px); left: 50%; width: 1164px; margin: 0;
+  transform: translateX(-50%); color: #fff; font-family: "DXTaja", "DX타자", serif;
+  font-size: 50px; font-weight: 500; line-height: 45px; text-align: center;
+}
+.intro-page6-title-hidden { opacity: 0; }
+.intro-axis-zero { position: absolute; top: 0; left: 960px; width: 0; height: 1px; }
+.intro-axis { position: absolute; display: block; background: #fff; }
+.intro-axis-vertical { top: 0; left: 960px; width: 1px; height: 1080px; }
+.intro-axis-horizontal { top: 540px; left: 0; width: 1920px; height: 1px; }
+.intro-page6t2.is-smart-enter .intro-axis-vertical { opacity: .3; transform: scaleY(.000926); transform-origin: top; }
+.intro-page6t2.is-smart-enter.is-entering .intro-axis-vertical {
+  opacity: 1;
+  transform: scaleY(1);
+  transition: transform var(--intro-motion-duration) var(--intro-motion-easing), opacity var(--intro-motion-duration) var(--intro-motion-easing);
+}
+.intro-page6t3.is-smart-enter .intro-axis-horizontal { opacity: .3; transform: scaleX(.001042); transform-origin: left; }
+.intro-page6t3.is-smart-enter.is-entering .intro-axis-horizontal {
+  opacity: 1;
+  transform: scaleX(1);
+  transition: transform var(--intro-motion-duration) var(--intro-motion-easing), opacity var(--intro-motion-duration) var(--intro-motion-easing);
+}
+
+/* Page 7 — the axes, Btn2 component layers, and hover-only content are discrete Figma layers. */
+.page7-grid { position: absolute; z-index: 0; inset: 0; pointer-events: none; }
+.page7-grid i { position: absolute; display: block; background: #fff; }
+.page7-grid-vertical { top: 0; left: 960px; width: 1px; height: 1080px; }
+.page7-grid-horizontal { top: 540px; left: 0; width: 1920px; height: 1px; }
+.page7-choice { z-index: 2; width: 410px; height: 205px; overflow: hidden; outline: none; }
+.page7-about { top: 167px; left: 275px; }
+.page7-map { top: 707px; left: 275px; }
+.page7-choice-blur, .page7-choice-box, .page7-choice-label { position: absolute; display: block; }
+.page7-choice-blur { left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0); transition: background-color 550ms var(--figma-ease-in); }
+.page7-choice-box { left: 50%; transform: translateX(-50%); background: #343434; transition: background-color 550ms var(--figma-ease-in); }
+.page7-choice-label { width: max-content; transform: translateX(-50%); color: #fff; font-family: "Pretendard", sans-serif; text-align: center; white-space: nowrap; transition: left 550ms var(--figma-ease-in), font-weight 550ms var(--figma-ease-in); }
+.page7-about .page7-choice-blur,
+.page7-about .page7-choice-box { top: 68px; width: 281.048px; height: 69.435px; }
+.page7-about .page7-choice-blur { filter: blur(4.96px); }
+.page7-about .page7-choice-label { top: 68.2px; left: calc(50% - 5.31px); font-size: 41.33px; font-weight: 200; line-height: 74.395px; }
+.page7-map .page7-choice-blur,
+.page7-map .page7-choice-box { top: 69px; width: 285.656px; height: 70.574px; }
+.page7-map .page7-choice-blur { filter: blur(5.041px); }
+.page7-map .page7-choice-label { top: 67.22px; left: calc(50% + 1.13px); font-size: 42.01px; font-weight: 200; line-height: 75.615px; }
+
+.page7-detail { position: absolute; z-index: 1; inset: 0; margin: 0; opacity: 0; pointer-events: none; transition: opacity 550ms var(--figma-ease-in); }
+.page7-detail p, .page7-detail h1 { position: absolute; margin: 0; color: #fff; }
+.page7-theta { position: absolute; top: 128px; left: 1105px; width: 148.909px; height: 372.909px; transition: top 550ms var(--figma-ease-in); }
+.page7-logotype { top: 284.55px; left: 1179.45px; transform: translateX(-50%); font-family: "Pretendard", sans-serif; font-size: 24.747px; font-weight: 400; line-height: 44.545px; text-align: center; white-space: nowrap; transition: top 550ms var(--figma-ease-in); }
+.page7-about-detail h1 { top: 149px; left: 1403px; transform: translateX(-50%); font-family: "Pretendard", sans-serif; font-size: 40px; font-weight: 600; line-height: normal; text-align: center; white-space: nowrap; }
+.page7-rule { position: absolute; top: 213px; left: 1327px; width: 477px; height: 2px; background: #fff; }
+.page7-description { top: 235px; left: 1327px; width: 477px; font-family: "Pretendard", sans-serif; font-size: 18px; font-weight: 400; line-height: 36px; text-align: justify; }
+.page7-map-overview { position: absolute; top: 707px; left: 1056px; display: block; width: 347.989px; height: 347.904px; object-fit: cover; transition: top 550ms var(--figma-ease-in); }
+.page7-map-copy { left: 1478px; width: 370px; font-family: "Pretendard", sans-serif; font-size: 18.057px; font-weight: 300; line-height: 26.484px; white-space: nowrap; }
+.page7-map-copy strong { font-weight: 500; }
+.page7-map-copy-ko { top: 694.78px; }
+.page7-map-copy-en { top: 819.98px; }
+
+.intro-page7.is-from-axes .page7-choice { opacity: 0; }
+.intro-page7.is-from-axes.is-entering .page7-choice {
+  opacity: 1;
+  transition: opacity var(--intro-motion-duration) var(--intro-motion-easing);
+}
+
+.intro-page7.is-about-hovered .page7-about .page7-choice-blur { background: rgba(255, 255, 255, .2); transition: background-color 511.047ms var(--figma-gentle); }
+.intro-page7.is-about-hovered .page7-about .page7-choice-box { background: #6e6e6e; transition: background-color 511.047ms var(--figma-gentle); }
+.intro-page7.is-about-hovered .page7-about .page7-choice-label { left: calc(50% - 5.81px); font-weight: 400; transition: left 511.047ms var(--figma-gentle), font-weight 511.047ms var(--figma-gentle); }
+.intro-page7.is-about-hovered .page7-about-detail { opacity: 1; transition: opacity 600ms var(--figma-ease-out); }
+.intro-page7.is-about-hovered .page7-theta { top: 85.05px; transition: top 600ms var(--figma-ease-out); }
+.intro-page7.is-about-hovered .page7-logotype { top: 241.59px; transition: top 600ms var(--figma-ease-out); }
+
+.intro-page7.is-map-hovered .page7-map .page7-choice-blur { background: rgba(255, 255, 255, .2); transition: background-color 511.047ms var(--figma-gentle); }
+.intro-page7.is-map-hovered .page7-map .page7-choice-box { background: #6e6e6e; transition: background-color 511.047ms var(--figma-gentle); }
+.intro-page7.is-map-hovered .page7-map .page7-choice-label { left: calc(50% + .83px); font-weight: 400; transition: left 511.047ms var(--figma-gentle), font-weight 511.047ms var(--figma-gentle); }
+.intro-page7.is-map-hovered .page7-map-detail { opacity: 1; transition: opacity 600ms var(--figma-ease-out); }
+.intro-page7.is-map-hovered .page7-map-overview { top: 637px; transition: top 600ms var(--figma-ease-out); }
+
+/* About transition and About */
+.about-top-blur { position: absolute; z-index: 3; top: 164px; left: 50px; display: block; width: 1691px; height: 47px; object-fit: cover; pointer-events: none; }
+.about-transition-rule { position: absolute; top: 173px; left: 50px; display: block; width: 457px; height: 1px; background: #fff; }
+.about-header p { position: absolute; z-index: 4; top: 73px; left: 50px; margin: 0; color: #fff; font-family: "Pretendard", sans-serif; font-size: 60px; font-weight: 700; line-height: 45px; white-space: nowrap; }
+.about-rule { position: absolute; z-index: 4; top: 164px; left: 50px; display: block; width: 457px; height: 4px; background: #fff; }
+.about-scroll { position: absolute; top: 164px; left: 50px; width: 1820px; height: 914px; overflow-x: clip; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .5) transparent; }
+.about-copy { position: absolute; top: 47px; left: 0; width: 444px; color: #fff; font-family: "Pretendard", sans-serif; font-size: 20px; font-weight: 700; line-height: 40px; letter-spacing: .6px; text-align: justify; white-space: normal; word-break: break-word; }
+.about-copy p { min-height: 40px; margin: 0; line-height: 40px; }
+.about-copy .about-empty { height: 40px; }
+.about-bottom { position: absolute; top: 1808px; left: 0; display: block; width: 599px; height: 4px; background: #fff; }
+.about-image-dummy { position: absolute; top: 114px; left: 754px; width: 776px; height: 640px; padding: 253px 0 0 112px; background: #989898; color: #0f0; font-family: "Pretendard", sans-serif; font-size: 20px; font-weight: 700; line-height: 40px; letter-spacing: .6px; text-align: justify; white-space: nowrap; }
+.about-image-dummy p { margin: 0; line-height: 40px; }
+.about-back { z-index: 5; top: 98px; left: calc(66.67% + 381px); width: 80px; height: 35.152px; border: 1px solid #fff; border-radius: 10.101px; }
+.about-back-arrow { position: absolute; top: 31.61%; right: 38.04%; bottom: 26.44%; left: 37.88%; display: block; }
+.about-back-arrow img { position: absolute; top: -3.39%; right: -2.59%; bottom: -3.39%; left: -3.67%; display: block; width: calc(100% + 6.26%); height: calc(100% + 6.78%); }
+.about-back { transition: background-color 400ms var(--figma-ease-out); }
+.about-back:hover, .about-back:focus-visible { background: rgba(255, 255, 255, .25); outline: none; }
+.intro-about.is-from-about-transition .about-header,
+.intro-about.is-from-about-transition .about-scroll,
+.intro-about.is-from-about-transition .about-back { opacity: 0; }
+.intro-about.is-from-about-transition .about-header { transform: translateY(14px); }
+.intro-about.is-from-about-transition .about-scroll { transform: translateY(12px); }
+.intro-about.is-from-about-transition .about-back { transform: translateY(-12px); }
+.intro-about.is-from-about-transition .about-rule { opacity: 0; transform: translateY(9px) scaleY(.25); transform-origin: top; }
+.intro-about.is-from-about-transition.is-entering .about-header,
+.intro-about.is-from-about-transition.is-entering .about-scroll,
+.intro-about.is-from-about-transition.is-entering .about-back { opacity: 1; transform: translateY(0); transition: opacity var(--intro-motion-duration) var(--intro-motion-easing), transform var(--intro-motion-duration) var(--intro-motion-easing); }
+.intro-about.is-from-about-transition.is-entering .about-rule { opacity: 1; transform: translateY(0) scaleY(1); transition: opacity var(--intro-motion-duration) var(--intro-motion-easing), transform var(--intro-motion-duration) var(--intro-motion-easing); }
+
 .landing { position: relative; overflow: hidden; background: #101012; }
+.intro.is-handing-off { pointer-events: none; }
+.landing.is-intro-handoff { position: fixed; inset: 0; z-index: 10; display: block !important; opacity: 0; transition: opacity var(--intro-motion-duration, 1ms) var(--intro-motion-easing, var(--figma-ease-out)); }
+.landing.is-intro-handoff.is-intro-handoff-visible { opacity: 1; }
 .landing-map { position: absolute; width: 2339px; height: 2163px; left: -207px; top: -679px; }
 .landing-map img { display: block; width: 100%; height: 100%; }
 .map-entry { position: absolute; left: 30%; top: 20%; width: 40%; height: 60%; border: 0; background: transparent; cursor: pointer; }
 .landing.is-transitioning .map-entry { cursor: default; pointer-events: none; }
 .landing.is-transitioning .landing-map {
-  transition: left 1000ms cubic-bezier(.16, 1, .3, 1), top 1000ms cubic-bezier(.16, 1, .3, 1),
-    width 1000ms cubic-bezier(.16, 1, .3, 1), height 1000ms cubic-bezier(.16, 1, .3, 1);
+  transition: left var(--landing-zoom-duration) var(--landing-zoom-easing), top var(--landing-zoom-duration) var(--landing-zoom-easing),
+    width var(--landing-zoom-duration) var(--landing-zoom-easing), height var(--landing-zoom-duration) var(--landing-zoom-easing);
 }
 
 .map-page { position: relative; overflow: hidden; background: #101012; }
@@ -69,15 +208,34 @@ button { color: inherit; font: inherit; }
 
 .ui-layer { position: absolute; z-index: 4; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: top left; pointer-events: none; }
 .ui-layer > * { pointer-events: auto; }
-.index-trigger { position: absolute; top: 30px; left: 50px; width: 142px; height: 40px; padding: 0; border: 0; border-bottom: 1px solid rgba(255,255,255,.72); background: transparent; text-align: left; font-size: 25px; font-weight: 600; line-height: 35px; letter-spacing: -.025em; cursor: pointer; }
-.index-trigger:hover { opacity: .76; }
+.index-trigger { position: absolute; top: 30px; left: 50px; width: 142px; height: 40px; padding: 0; border: 0; background: transparent; text-align: left; font-size: 25px; font-weight: 600; line-height: 35px; letter-spacing: -.025em; cursor: pointer; }
+.index-trigger::after { content: ""; position: absolute; bottom: 0; left: 0; width: 100%; height: 1px; background: rgba(255,255,255,.72); transform-origin: left; }
+.index-trigger.is-tracing::after { animation: figma-index-line 400ms var(--figma-ease-out) both; }
+@keyframes figma-index-line { from { width: 1.41%; } to { width: 100%; } }
 .coordinates { position: absolute; left: 50px; bottom: 25px; margin: 0; font-size: 20px; font-weight: 500; line-height: 45px; letter-spacing: -.025em; }
+.ui-layer:not(.is-entered) .index-trigger,
+.ui-layer:not(.is-entered) .coordinates { opacity: 0; pointer-events: none; }
+.ui-layer:not(.is-entered) .index-trigger { transform: translateY(-100px); }
+.ui-layer:not(.is-entered) .coordinates { transform: translateY(100px); }
+.ui-layer.is-entered .index-trigger {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform var(--map-ui-enter-duration) var(--map-ui-enter-easing), opacity 220ms ease-out;
+}
+.ui-layer.is-entered .coordinates {
+  transform: translateY(0);
+  opacity: 1;
+  transition: transform var(--map-ui-enter-duration) var(--map-ui-enter-easing) var(--coordinates-enter-delay), opacity 220ms ease-out var(--coordinates-enter-delay);
+}
 
 .index-overlay { position: absolute; top: 0; left: 50px; width: 220px; height: 100%; overflow: hidden; background: #000; border: 1px solid #fff; opacity: 0; visibility: hidden; transform: translateY(-100%); transition: transform 800ms cubic-bezier(.42,0,.25,1), opacity 160ms ease, visibility 0s linear 800ms; }
 .index-overlay.is-open { opacity: 1; visibility: visible; transform: translateY(0); transition: transform 800ms cubic-bezier(.42,0,.25,1), opacity 160ms ease; }
 .index-row { display: block; width: 100%; min-height: 93px; padding: 6px 13px 7px; border: 0; border-bottom: 1px solid #fff; background: #000; color: #fff; text-align: left; cursor: pointer; }
 .index-row b, .index-row span { display: block; font-size: 25px; font-weight: 600; line-height: 35px; letter-spacing: -.035em; }
 .index-row:hover, .index-row:focus-visible, .index-row.is-active { background: #151515; outline: none; }
+.index-row.is-selected { background: #000; color: #fff; }
+#daerimButton { transition: background-color 450ms linear, color 450ms linear; }
+#daerimButton:hover, #daerimButton:focus-visible { background: #fff; color: #000; outline: none; transition-duration: 300ms; }
 .index-row:nth-child(1), .index-row:nth-child(3), .index-row:nth-child(7) { min-height: 132px; }
 .index-collapse { position: absolute; right: 0; bottom: 0; left: 0; display: block; width: 100%; height: 30px; padding: 0; border: 0; background: #000; color: #fff; cursor: pointer; font-family: Arial, sans-serif; font-size: 27px; font-weight: 400; line-height: 20px; }
 
@@ -103,4 +261,13 @@ button { color: inherit; font: inherit; }
 @media (max-aspect-ratio: 3/4) {
   .building-overlay { width: 100%; transform: translateX(100%); }
   .building-overlay.is-open { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-screen, .intro-screen *, .intro-screen *::before, .intro-screen *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+  .landing.is-transitioning .landing-map { transition-duration: 180ms; }
+  .ui-layer:not(.is-entered) .index-trigger,
+  .ui-layer:not(.is-entered) .coordinates { transform: none; }
+  .ui-layer.is-entered .index-trigger,
+  .ui-layer.is-entered .coordinates { transition: opacity 140ms ease-out; }
 }
