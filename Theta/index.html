@@ -32,9 +32,27 @@
           </section>
 
           <section class="intro-screen intro-page7" data-intro-screen="page7" aria-label="Page 7" aria-hidden="true">
-            <div class="page7-grid" aria-hidden="true"><i class="page7-grid-vertical"></i><i class="page7-grid-horizontal"></i></div>
-            <button class="page7-choice page7-about" id="aboutChoice" aria-label="About 보기"><span class="page7-choice-blur" aria-hidden="true"></span><span class="page7-choice-box" aria-hidden="true"></span><span class="page7-choice-label" aria-hidden="true">About</span><span class="sr-only">About 보기</span></button>
-            <button class="page7-choice page7-map" id="mapChoice" aria-label="지도 보기"><span class="page7-choice-blur" aria-hidden="true"></span><span class="page7-choice-box" aria-hidden="true"></span><span class="page7-choice-label" aria-hidden="true">Map</span><span class="sr-only">지도 보기</span></button>
+            <div class="page7-grid" aria-hidden="true">
+              <i class="page7-grid-vertical"></i><i class="page7-grid-horizontal"></i>
+              <i class="page7-hover-shade page7-hover-shade-bottom"></i>
+              <i class="page7-hover-shade page7-hover-shade-top"></i>
+            </div>
+            <button class="page7-choice page7-about" id="aboutChoice" aria-label="About 보기">
+              <span class="page7-choice-glow" aria-hidden="true"></span>
+              <span class="page7-choice-box" aria-hidden="true"></span>
+              <img class="page7-choice-symbol page7-choice-symbol-default" src="./assets/intro-selection/About-symbol-default.svg" alt="" draggable="false" />
+              <img class="page7-choice-symbol page7-choice-symbol-hover" src="./assets/intro-selection/About-symbol-hover.svg" alt="" draggable="false" />
+              <img class="page7-choice-title" src="./assets/intro-selection/About-Hover.svg" alt="" draggable="false" />
+              <span class="sr-only">About 보기</span>
+            </button>
+            <button class="page7-choice page7-map" id="mapChoice" aria-label="지도 보기">
+              <span class="page7-choice-glow" aria-hidden="true"></span>
+              <span class="page7-choice-box" aria-hidden="true"></span>
+              <img class="page7-choice-symbol page7-choice-symbol-default" src="./assets/intro-selection/Map-symbol-default.svg" alt="" draggable="false" />
+              <img class="page7-choice-symbol page7-choice-symbol-hover" src="./assets/intro-selection/Map-symbol-hover.svg" alt="" draggable="false" />
+              <img class="page7-choice-title" src="./assets/intro-selection/Map-Hover.svg" alt="" draggable="false" />
+              <span class="sr-only">지도 보기</span>
+            </button>
 
             <div class="page7-detail page7-about-detail" aria-hidden="true">
               <img class="page7-logotype" src="./temp_data/temp_logotype.svg" alt="Theta" />
@@ -88,10 +106,14 @@
 
       <section class="landing is-hidden" id="landing" aria-label="Page Map 1">
         <div class="landing-map">
-          <img src="./map.svg" alt="" draggable="false" />
-          <div class="map-main-layer" aria-hidden="true">
-            <div class="map-main-backdrop"></div>
-            <img class="map-main" src="./map-main-visible.svg" alt="" draggable="false" />
+          <div class="map-art" aria-hidden="true">
+            <div class="map-layer-stack">
+              <img class="map-layer" src="./assets/map/1-Background.svg" alt="" draggable="false" />
+              <img class="map-layer" src="./assets/map/2-Main.svg" alt="" draggable="false" />
+              <div class="building-layer" aria-hidden="true"></div>
+              <img class="map-layer map-symbol-layer" src="./assets/map/4-Symbols.svg" alt="" draggable="false" />
+              <img class="map-layer map-border-layer" src="./assets/map/5-Border.svg" alt="" draggable="false" />
+            </div>
           </div>
         </div>
         <button class="map-entry" id="enterMap" aria-label="지도 탐색 시작"></button>
@@ -100,13 +122,15 @@
       <section class="map-page is-hidden" id="mapPage" aria-label="Page Map 2">
         <div class="map-viewport" id="mapViewport">
           <div class="map-canvas" id="mapCanvas">
-            <img class="map-art" src="./map.svg" alt="서울 지도" draggable="false" />
-            <button class="building-hotspot" id="buildingHotspot" aria-label="대림아파트 정보 보기">
-              <img class="building-hover-layer building-hover-bottom" src="./Build-1-hover-bottom.svg" alt="" draggable="false" />
-              <img class="building-hover-layer building-hover-middle" src="./Build-1-hover-middle.svg" alt="" draggable="false" />
-              <img class="building-hover-layer building-hover-top" src="./Build-1-hover-top.svg" alt="" draggable="false" />
-              <img class="building-default" src="./Build-1.svg" alt="" draggable="false" />
-            </button>
+            <div class="map-art" aria-label="서울 지도">
+              <div class="map-layer-stack">
+                <img class="map-layer" src="./assets/map/1-Background.svg" alt="" draggable="false" />
+                <img class="map-layer" src="./assets/map/2-Main.svg" alt="" draggable="false" />
+                <div class="building-layer" aria-label="상호작용 가능한 건물"></div>
+                <img class="map-layer map-symbol-layer" src="./assets/map/4-Symbols.svg" alt="" draggable="false" />
+                <img class="map-layer map-border-layer" src="./assets/map/5-Border.svg" alt="" draggable="false" />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -115,35 +139,21 @@
           <p class="coordinates" id="coordinates" aria-live="polite">0.000 / 0° / -</p>
 
           <aside class="index-overlay" id="indexOverlay" aria-hidden="true" aria-label="건물 인덱스">
-          <button class="index-row"><b>01.</b><span>주상복합<br />빌라의 층간소음</span></button>
-          <button class="index-row"><b>02.</b><span>부부싸움 일기</span></button>
-          <button class="index-row is-selected" id="daerimButton"><b>03.</b><span>올라오지 않는<br />엘리베이터</span></button>
-          <button class="index-row"><b>04.</b><span>놀이터와 자동차</span></button>
-          <button class="index-row"><b>05.</b><span>디자인 스튜디오</span></button>
-          <button class="index-row"><b>06.</b><span>구청의 권리투쟁</span></button>
-          <button class="index-row"><b>07.</b><span>사원 앞에<br />놓인 돼지 머리</span></button>
-          <button class="index-row"><b>08.</b><span>재개발 계획</span></button>
-          <button class="index-row"><b>09.</b><span>기업 갈등</span></button>
-          <button class="index-row"><b>10.</b><span>삼거리 포장마차</span></button>
-          <button class="index-collapse" id="closeIndex" aria-label="인덱스 닫기">⌃</button>
+            <button class="index-row" type="button" data-index-building="1"><span class="index-row-title">01. 대원 빌라</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="2"><span class="index-row-title">02. 우성현대아파트</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="3"><span class="index-row-title">03. 우성구청</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="4"><span class="index-row-title">04. 신금역 3번출구 포차</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="5"><span class="index-row-title">05. 힐스테이트 방안 센트럴</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="6"><span class="index-row-title">06. 방안근린공원</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="7"><span class="index-row-title">07. 비에이원시스템</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="8"><span class="index-row-title">08. 우리24 방안점</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="9"><span class="index-row-title">09. F2F 디자인 스튜디오</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="10"><span class="index-row-title">10. 한국이슬람교 제안성원</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="11"><span class="index-row-title">11. 방안 제4재정비촉진구역</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-row" type="button" data-index-building="12"><span class="index-row-title">12. 방안동 문화거리</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>
+            <button class="index-collapse" id="closeIndex" type="button" aria-label="인덱스 닫기"><span class="index-collapse-arrow" aria-hidden="true"></span></button>
           </aside>
 
-          <aside class="building-overlay" id="buildingOverlay" aria-hidden="true" aria-label="대림아파트 정보">
-          <button class="building-close" id="closeBuilding" aria-label="건물 정보 닫기">×</button>
-          <h1>대림아파트</h1>
-          <h2>아파트</h2>
-          <div class="building-gallery" aria-label="대림아파트 사진">
-            <img src="./build-image-1.png" alt="대림아파트 정면" />
-            <img src="./build-image-3.png" alt="대림아파트 외관" />
-            <img src="./build-image-2.png" alt="대림아파트 단지 전경" />
-            <img src="./build-image-6.png" alt="대림아파트 실내" />
-          </div>
-          <p class="building-copy">대림아파트는 XX 지역에 위치한 아파트 단지로, 2005년 5월에 준공되었다. 총 1개동, 지상 7층 규모로 구성되어 있으며, 전체 세대수는 66세대이다. 구식 복도형 구조의 아파트로, 세대 면적은 88.25㎡부터 185.49㎡까지 다양하게 구성된다.</p>
-          <div class="scenario">
-            <span>SCENARIO</span>
-            <div class="scenario-controls" aria-hidden="true"><i></i><em></em><i></i><i></i></div>
-          </div>
-          </aside>
         </div>
       </section>
     </main>

@@ -21,9 +21,30 @@
   /* Figma exposes the semantic spring preset "Gentle", rather than spring constants.
      This cubic-bezier is the web-compatible approximation used only for those variants. */
   --figma-gentle: cubic-bezier(.22, 1, .36, 1);
+  /* Build hover: Figma Dissolve, 400ms Slow Spring (stiffness 180 / damping 30 / mass 1).
+     The sampled curve is normalized at 400ms so CSS reaches the final opacity cleanly. */
+  --building-hover-duration: 400ms;
+  --building-hover-fallback-easing: cubic-bezier(.16, 1, .3, 1);
+  --building-hover-spring: linear(
+    0 0%, .1042 10%, .2925 20%, .4753 30%, .6265 40%, .7434 50%,
+    .8309 60%, .8951 70%, .9418 80%, .9756 90%, 1 100%
+  );
+  --page7-choice-duration: 400ms;
+  --page7-choice-easing: cubic-bezier(0, 0, .58, 1);
 }
 * { box-sizing: border-box; }
-body { margin: 0; overflow: hidden; background: #101012; }
+body {
+  margin: 0;
+  overflow: hidden;
+  background: #101012;
+  -webkit-tap-highlight-color: transparent;
+}
+/* This experience is pointer-driven; prevent Safari's double-click text/range selection. */
+body, body * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
 button { color: inherit; font: inherit; }
 .app, .landing, .map-page, .map-viewport { width: 100vw; height: 100vh; }
 .is-hidden { display: none !important; }
@@ -70,23 +91,36 @@ button { color: inherit; font: inherit; }
 /* Page 7 — the axes, Btn2 component layers, and hover-only content are discrete Figma layers. */
 .page7-grid { position: absolute; z-index: 0; inset: 0; pointer-events: none; }
 .page7-grid i { position: absolute; display: block; background: #fff; }
-.page7-grid-vertical { top: 0; left: 960px; width: 1px; height: 1080px; }
-.page7-grid-horizontal { top: 540px; left: 0; width: 1920px; height: 1px; }
-.page7-choice { z-index: 2; width: 410px; height: 205px; overflow: hidden; outline: none; }
-.page7-about { top: 167px; left: 275px; }
-.page7-map { top: 707px; left: 275px; }
-.page7-choice-blur, .page7-choice-box, .page7-choice-label { position: absolute; display: block; }
-.page7-choice-blur { left: 50%; transform: translateX(-50%); background: rgba(255, 255, 255, 0); transition: background-color 550ms var(--figma-ease-in); }
-.page7-choice-box { left: 50%; transform: translateX(-50%); background: #343434; transition: background-color 550ms var(--figma-ease-in); }
-.page7-choice-label { width: max-content; transform: translateX(-50%); color: #fff; font-family: "Pretendard", sans-serif; text-align: center; white-space: nowrap; transition: left 550ms var(--figma-ease-in), font-weight 550ms var(--figma-ease-in); }
-.page7-about .page7-choice-blur,
-.page7-about .page7-choice-box { top: 68px; width: 281.048px; height: 69.435px; }
-.page7-about .page7-choice-blur { filter: blur(4.96px); }
-.page7-about .page7-choice-label { top: 68.2px; left: calc(50% - 5.31px); font-size: 41.33px; font-weight: 200; line-height: 74.395px; }
-.page7-map .page7-choice-blur,
-.page7-map .page7-choice-box { top: 69px; width: 285.656px; height: 70.574px; }
-.page7-map .page7-choice-blur { filter: blur(5.041px); }
-.page7-map .page7-choice-label { top: 67.22px; left: calc(50% + 1.13px); font-size: 42.01px; font-weight: 200; line-height: 75.615px; }
+.page7-grid-vertical { z-index: 1; top: 0; left: 960px; width: 1px; height: 1080px; transition: opacity var(--page7-choice-duration) var(--page7-choice-easing); }
+.page7-grid-horizontal { z-index: 1; top: 540px; left: 0; width: 1920px; height: 1px; }
+.page7-hover-shade { z-index: 0; left: 0; width: 1920px; height: 540px; background: #000 !important; opacity: 0; transition: opacity var(--page7-choice-duration) var(--page7-choice-easing); }
+.page7-hover-shade-top { top: 0; }
+.page7-hover-shade-bottom { bottom: 0; }
+.page7-choice { z-index: 2; width: 460px; height: 151.143px; overflow: visible; outline: none; }
+/* Keep each original component centre fixed while its full 280px export frame scales to 460px. */
+.page7-about { top: 179.429px; left: 185px; }
+.page7-map { top: 719.429px; left: 185px; }
+/* The Figma component's four Smart Animate tracks: box, glow, symbol stroke, and title. */
+.page7-choice-box, .page7-choice-glow {
+  position: absolute;
+  top: 27.173913%; left: 14.285714%; width: 71.428571%; height: 45.652174%;
+  transition: left var(--page7-choice-duration) var(--page7-choice-easing), width var(--page7-choice-duration) var(--page7-choice-easing), background-color var(--page7-choice-duration) var(--page7-choice-easing), opacity var(--page7-choice-duration) var(--page7-choice-easing);
+}
+.page7-choice-box { background: #343434; }
+.page7-choice-glow { background: rgba(255,255,255,.2); filter: blur(4.929px); opacity: 0; }
+.page7-choice-symbol, .page7-choice-title {
+  position: absolute; inset: 0; display: block; width: 100%; height: 100%;
+  pointer-events: none;
+}
+/* Symbol-only exports prevent the component's background box from appearing during the crossfade. */
+.page7-choice-symbol { transition: opacity var(--page7-choice-duration) var(--page7-choice-easing); }
+.page7-choice-symbol-hover { opacity: 0; }
+.page7-choice-title {
+  clip-path: inset(0 64% 80% 0);
+  opacity: 0;
+  transform: translateX(10px);
+  transition: opacity var(--page7-choice-duration) var(--page7-choice-easing), transform var(--page7-choice-duration) var(--page7-choice-easing);
+}
 
 .page7-detail { position: absolute; z-index: 1; inset: 0; margin: 0; opacity: 0; pointer-events: none; transition: opacity 550ms var(--figma-ease-in); }
 .page7-detail p, .page7-detail h1 { position: absolute; margin: 0; color: #fff; }
@@ -106,15 +140,27 @@ button { color: inherit; font: inherit; }
   transition: opacity var(--intro-motion-duration) var(--intro-motion-easing);
 }
 
-.intro-page7.is-about-hovered .page7-about .page7-choice-blur { background: rgba(255, 255, 255, .2); transition: background-color 511.047ms var(--figma-gentle); }
-.intro-page7.is-about-hovered .page7-about .page7-choice-box { background: #6e6e6e; transition: background-color 511.047ms var(--figma-gentle); }
-.intro-page7.is-about-hovered .page7-about .page7-choice-label { left: calc(50% - 5.81px); font-weight: 400; transition: left 511.047ms var(--figma-gentle), font-weight 511.047ms var(--figma-gentle); }
+.intro-page7.is-about-hovered .page7-about .page7-choice-box,
+.intro-page7.is-about-hovered .page7-about .page7-choice-glow { left: 8.928571%; width: 82.142857%; }
+.intro-page7.is-about-hovered .page7-about .page7-choice-box { background: #6e6e6e; }
+.intro-page7.is-about-hovered .page7-about .page7-choice-glow { opacity: 1; }
+.intro-page7.is-about-hovered .page7-about .page7-choice-symbol-default { opacity: 0; }
+.intro-page7.is-about-hovered .page7-about .page7-choice-symbol-hover { opacity: 1; }
+.intro-page7.is-about-hovered .page7-about .page7-choice-title { opacity: 1; transform: translateX(0); }
+.intro-page7.is-about-hovered .page7-hover-shade-bottom { opacity: .25; }
+.intro-page7.is-about-hovered .page7-grid-vertical { opacity: .2; }
 .intro-page7.is-about-hovered .page7-about-detail { opacity: 1; transition: opacity 600ms var(--figma-ease-out); }
 .intro-page7.is-about-hovered .page7-logotype { top: 85.05px; transition: top 600ms var(--figma-ease-out); }
 
-.intro-page7.is-map-hovered .page7-map .page7-choice-blur { background: rgba(255, 255, 255, .2); transition: background-color 511.047ms var(--figma-gentle); }
-.intro-page7.is-map-hovered .page7-map .page7-choice-box { background: #6e6e6e; transition: background-color 511.047ms var(--figma-gentle); }
-.intro-page7.is-map-hovered .page7-map .page7-choice-label { left: calc(50% + .83px); font-weight: 400; transition: left 511.047ms var(--figma-gentle), font-weight 511.047ms var(--figma-gentle); }
+.intro-page7.is-map-hovered .page7-map .page7-choice-box,
+.intro-page7.is-map-hovered .page7-map .page7-choice-glow { left: 8.928571%; width: 82.142857%; }
+.intro-page7.is-map-hovered .page7-map .page7-choice-box { background: #6e6e6e; }
+.intro-page7.is-map-hovered .page7-map .page7-choice-glow { opacity: 1; }
+.intro-page7.is-map-hovered .page7-map .page7-choice-symbol-default { opacity: 0; }
+.intro-page7.is-map-hovered .page7-map .page7-choice-symbol-hover { opacity: 1; }
+.intro-page7.is-map-hovered .page7-map .page7-choice-title { opacity: 1; transform: translateX(0); }
+.intro-page7.is-map-hovered .page7-hover-shade-top { opacity: .25; }
+.intro-page7.is-map-hovered .page7-grid-vertical { opacity: .2; }
 .intro-page7.is-map-hovered .page7-map-detail { opacity: 1; transition: opacity 600ms var(--figma-ease-out); }
 .intro-page7.is-map-hovered .page7-map-overview { top: 637px; transition: top 600ms var(--figma-ease-out); }
 
@@ -152,8 +198,8 @@ button { color: inherit; font: inherit; }
 .landing.is-intro-handoff { position: fixed; inset: 0; z-index: 10; display: block !important; opacity: 0; transition: opacity var(--intro-motion-duration, 1ms) var(--intro-motion-easing, var(--figma-ease-out)); }
 .landing.is-intro-handoff.is-intro-handoff-visible { opacity: 1; }
 .landing-map { position: absolute; width: 2339px; height: 2163px; left: -207px; top: -679px; }
-.landing-map img { display: block; width: 100%; height: 100%; }
-.map-entry { position: absolute; left: 30%; top: 20%; width: 40%; height: 60%; border: 0; background: transparent; cursor: pointer; }
+.landing-map > .map-art { width: 100%; height: 100%; }
+.map-entry { position: absolute; left: 34.7597%; top: 40.0254%; width: 30.139%; height: 32.584%; border: 0; background: transparent; cursor: pointer; }
 .landing.is-transitioning .map-entry { cursor: default; pointer-events: none; }
 .landing.is-transitioning .landing-map {
   transition: left var(--landing-zoom-duration) var(--landing-zoom-easing), top var(--landing-zoom-duration) var(--landing-zoom-easing),
@@ -166,42 +212,49 @@ button { color: inherit; font: inherit; }
 .map-canvas { position: absolute; left: 0; top: 0; transform-origin: top left; will-change: transform, width, height; }
 .map-canvas.is-animating { transition: transform 560ms cubic-bezier(.16, 1, .3, 1), width 560ms cubic-bezier(.16, 1, .3, 1), height 560ms cubic-bezier(.16, 1, .3, 1); }
 .map-art { position: relative; z-index: 0; display: block; width: 100%; height: 100%; pointer-events: none; user-select: none; }
-
-/* Figma MAP > map_main: this shared layer moves with the base map during landing handoff. */
-.map-main-layer {
+.map-layer-stack {
   position: absolute;
-  left: 34.79016638%;
-  top: 40.02045944%;
-  width: 30.14651105%;
-  height: 32.58163979%;
-  z-index: 1;
-  overflow: hidden;
-  border-radius: 50%;
-  pointer-events: none;
-  user-select: none;
+  left: -16.16450473%;
+  top: -15.06792509%;
+  width: 132.11524289%;
+  aspect-ratio: 1;
+  overflow: visible;
 }
-.map-main-backdrop { position: absolute; inset: 0; background: #101012; }
-.map-main { position: absolute; inset: 0; z-index: 1; display: block; width: 100%; height: 100%; }
+.map-layer { position: absolute; inset: 0; display: block; width: 100%; height: 100%; pointer-events: none; user-select: none; }
+.map-symbol-layer { opacity: 0; transition: opacity 600ms var(--figma-ease-out); }
+.map-art.is-symbols-visible .map-symbol-layer { opacity: 1; }
+/* The main-area border belongs to the exploration state, not the initial landing view. */
+.landing .map-border-layer { opacity: 0; }
+.landing .map-symbol-layer { opacity: 0; }
+.building-layer { position: absolute; inset: 0; pointer-events: auto; }
+.landing .building-layer { pointer-events: none; }
 
-/* Build-1 is its original transparent SVG, not a rectangular crop from the page export. */
+/* The numbered component exports retain their exact 01/02 SVG geometry. */
 .building-hotspot {
   position: absolute;
-  z-index: 3;
-  left: 51.45269431%; top: 58.15545711%; width: 2.39561719%; height: 4.10948994%;
+  z-index: 1;
   padding: 0; border: 0; background: transparent; cursor: pointer; isolation: isolate; overflow: visible;
 }
 .building-hotspot img { display: block; width: 100%; height: 100%; pointer-events: none; }
-.building-hover-layer {
-  position: absolute; inset: 0; opacity: 0; transition: opacity 110ms linear;
+.building-default {
+  position: absolute; inset: 0; z-index: 1;
+  transition: opacity var(--building-hover-duration) var(--building-hover-fallback-easing);
+  transition: opacity var(--building-hover-duration) var(--building-hover-spring);
 }
-.building-hover-middle { filter: blur(5px); }
-.building-hover-bottom { filter: blur(5px); }
-.building-hover-top { z-index: 1; }
-.building-default { position: relative; z-index: 2; }
-.building-hotspot:hover .building-hover-layer,
-.building-hotspot:focus-visible .building-hover-layer { opacity: 1; }
+.building-hover {
+  position: absolute; z-index: 2; opacity: 0;
+  /* The first declaration is the fallback for browsers without CSS linear(). */
+  transition: opacity var(--building-hover-duration) var(--building-hover-fallback-easing);
+  transition: opacity var(--building-hover-duration) var(--building-hover-spring);
+}
+.building-hotspot:hover .building-hover,
+.building-hotspot:focus-visible .building-hover,
+.building-hotspot.is-index-hovered .building-hover,
+.building-hotspot.is-selected .building-hover { opacity: 1; }
 .building-hotspot:hover .building-default,
-.building-hotspot:focus-visible .building-default { opacity: 0; }
+.building-hotspot:focus-visible .building-default,
+.building-hotspot.is-index-hovered .building-default,
+.building-hotspot.is-selected .building-default { opacity: 0; }
 .building-hotspot:hover, .building-hotspot:focus-visible { outline: none; }
 
 .ui-layer { position: absolute; z-index: 4; top: 0; left: 0; width: 1920px; height: 1080px; transform-origin: top left; pointer-events: none; }
@@ -228,38 +281,64 @@ button { color: inherit; font: inherit; }
 
 .index-overlay { position: absolute; top: 0; left: 50px; width: 220px; height: 100%; overflow: hidden; background: #000; border: 1px solid #fff; opacity: 0; visibility: hidden; transform: translateY(-100%); transition: transform 800ms cubic-bezier(.42,0,.25,1), opacity 160ms ease, visibility 0s linear 800ms; }
 .index-overlay.is-open { opacity: 1; visibility: visible; transform: translateY(0); transition: transform 800ms cubic-bezier(.42,0,.25,1), opacity 160ms ease; }
-.index-row { display: block; width: 100%; min-height: 93px; padding: 6px 13px 7px; border: 0; border-bottom: 1px solid #fff; background: #000; color: #fff; text-align: left; cursor: pointer; }
-.index-row b, .index-row span { display: block; font-size: 25px; font-weight: 600; line-height: 35px; letter-spacing: -.035em; }
-.index-row:hover, .index-row:focus-visible, .index-row.is-active { background: #151515; outline: none; }
-.index-row.is-selected { background: #000; color: #fff; }
-#daerimButton { transition: background-color 450ms linear, color 450ms linear; }
-#daerimButton:hover, #daerimButton:focus-visible { background: #fff; color: #000; outline: none; transition-duration: 300ms; }
-.index-row:nth-child(1), .index-row:nth-child(3), .index-row:nth-child(7) { min-height: 132px; }
-.index-collapse { position: absolute; right: 0; bottom: 0; left: 0; display: block; width: 100%; height: 30px; padding: 0; border: 0; background: #000; color: #fff; cursor: pointer; font-family: Arial, sans-serif; font-size: 27px; font-weight: 400; line-height: 20px; }
+.index-row {
+  position: relative; display: block; width: 100%; height: 87px; padding: 0; border: 0;
+  border-bottom: 1px solid rgba(255,255,255,.5); background: #000; color: #fff; text-align: left; cursor: pointer;
+  transition: background-color 300ms var(--figma-ease-out);
+}
+.index-row-title, .index-row-arrow, .index-row-detail { position: absolute; display: block; white-space: nowrap; transition: transform 300ms var(--figma-ease-out), opacity 300ms var(--figma-ease-out); }
+.index-row-title { top: 13px; left: 10px; right: 10px; overflow: hidden; font-size: 18px; font-weight: 600; line-height: 30px; letter-spacing: -.01em; }
+.index-row-arrow { top: 50px; left: 17px; font-size: 11px; font-weight: 400; line-height: 14px; letter-spacing: -.55px; opacity: .4; }
+.index-row-detail { top: 51px; left: 36px; font-size: 12px; font-weight: 300; line-height: 14px; opacity: .4; }
+.index-row:hover, .index-row:focus-visible { background: #373737; outline: none; }
+.index-row:hover .index-row-title, .index-row:focus-visible .index-row-title { transform: translateX(2px); }
+.index-row:hover .index-row-arrow, .index-row:focus-visible .index-row-arrow,
+.index-row:hover .index-row-detail, .index-row:focus-visible .index-row-detail { transform: translateX(3px); opacity: 1; }
+.index-collapse { position: absolute; right: 0; bottom: 0; left: 0; display: block; width: 100%; height: 36px; padding: 0; border: 0; border-top: 1px solid #fff; background: #000; color: #fff; cursor: pointer; transition: background-color 300ms var(--figma-ease-out); }
+.index-collapse-arrow { position: absolute; top: 15px; left: calc(50% - 6px); width: 12px; height: 12px; border-top: 2px solid #fff; border-left: 2px solid #fff; transform: rotate(45deg); transition: transform 300ms var(--figma-ease-out); }
+.index-collapse:hover, .index-collapse:focus-visible { background: #373737; outline: none; }
+.index-collapse:hover .index-collapse-arrow, .index-collapse:focus-visible .index-collapse-arrow { transform: translateY(-2px) rotate(45deg); }
 
-.building-overlay { position: absolute; top: 0; right: 0; width: 420px; height: 100%; margin: 0; padding: 46px 40px; overflow: hidden; background: #000; border-left: 1px solid rgba(255,255,255,.72); opacity: 0; visibility: hidden; transform: translateX(100%); transition: transform 560ms cubic-bezier(.16,1,.3,1), opacity 180ms ease, visibility 0s linear 560ms; }
+.building-overlay { position: absolute; top: 0; right: 0; width: 420px; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; border-left: 1px solid #fff; opacity: 0; visibility: hidden; transform: translateX(100%); transition: transform 560ms cubic-bezier(.16,1,.3,1), opacity 180ms ease, visibility 0s linear 560ms; }
 .building-overlay.is-open { opacity: 1; visibility: visible; transform: translateX(0); transition: transform 560ms cubic-bezier(.16,1,.3,1), opacity 180ms ease; }
-.building-close { position: absolute; top: 21px; right: 21px; width: 31px; height: 31px; padding: 0; border: 0; background: transparent; color: transparent; cursor: pointer; }
-.building-close::before, .building-close::after { content: ""; position: absolute; left: 4px; top: 15px; width: 23px; height: 1px; background: #fff; transform: rotate(45deg); }
+.building-close { position: absolute; z-index: 2; top: 21px; right: 2px; width: 31px; height: 31px; padding: 0; border: 0; background: transparent; color: transparent; cursor: pointer; }
+.building-close::before, .building-close::after { content: ""; position: absolute; left: 4px; top: 15px; width: 23px; height: 1.5px; background: #fff; transform: rotate(45deg); }
 .building-close::after { transform: rotate(-45deg); }
 .building-close:hover::before, .building-close:hover::after { background: #aaa; }
-.building-overlay h1 { margin: 0; font-size: 40px; font-weight: 600; line-height: 35px; letter-spacing: -.06em; }
-.building-overlay h2 { margin: 8px 0 26px 3px; font-size: 16px; font-weight: 600; line-height: 35px; letter-spacing: -.03em; }
-.building-gallery { display: grid; grid-template-columns: 156px 161px; grid-template-rows: 124px 124px; gap: 12px; margin-left: 5px; }
-.building-gallery img { display: block; width: 100%; height: 124px; object-fit: cover; filter: grayscale(1); }
-.building-gallery img:nth-child(3) { width: 113px; }
-.building-gallery img:nth-child(4) { width: 201px; margin-left: -33px; }
-.building-copy { margin: 35px 5px 0; font-size: 16px; font-weight: 400; line-height: 33px; letter-spacing: -.045em; text-align: justify; }
-.scenario { position: absolute; bottom: 91px; left: 86px; width: 246px; }
-.scenario > span { display: block; margin-bottom: 10px; font-family: Arial, sans-serif; font-size: 12px; font-weight: 400; line-height: 14px; }
-.scenario-controls { display: flex; align-items: center; justify-content: center; height: 47px; border: 1px solid #fff; gap: 10px; }
-.scenario-controls i { display: block; width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-bottom: 27px solid #fff; }
-.scenario-controls em { height: 27px; width: 1px; margin: 0 4px; background: #fff; }
+.building-title { position: absolute; top: 69px; left: 40px; margin: 0; color: #fff; font-size: 38px; font-weight: 600; line-height: 35px; letter-spacing: normal; white-space: nowrap; }
+.building-meta { position: absolute; inset: 0; margin: 0; color: #fff; white-space: nowrap; }
+.building-meta strong { position: absolute; top: 111px; left: var(--building-category-left); font-size: 16px; font-weight: 600; line-height: 35px; letter-spacing: normal; }
+.building-meta i { position: absolute; top: 127px; left: var(--building-dot-left); display: block; width: 2px; height: 2px; border-radius: 50%; background: #fff; }
+.building-meta span { position: absolute; top: 112px; left: var(--building-address-left); overflow: hidden; font-size: 15px; font-weight: 400; line-height: 33px; letter-spacing: normal; text-overflow: clip; }
+.building-image { position: absolute; left: var(--building-image-left); top: var(--building-image-top); display: block; width: var(--building-image-width); height: var(--building-image-height); object-fit: cover; }
+.building-summary, .building-description { position: absolute; width: 329px; margin: 0; color: #fff; font-size: 16px; font-weight: 500; line-height: 26px; letter-spacing: normal; text-align: justify; word-break: break-word; }
+.building-summary { left: var(--building-summary-left); top: var(--building-summary-top); }
+.building-description { left: var(--building-detail-left); top: var(--building-detail-top); width: var(--building-detail-width); font-weight: 400; line-height: 33px; }
+.building-description p { margin: 0; }
+.building-facts { position: absolute; top: var(--building-detail-top); left: var(--building-detail-left); width: var(--building-detail-width); margin: 0; color: #fff; font-size: 16px; font-weight: 400; line-height: 33px; }
+.building-facts > div { display: grid; grid-template-columns: 34px minmax(0, 1fr); column-gap: 9px; min-height: 33px; }
+.building-facts dt, .building-facts dd { margin: 0; padding: 0; }
+.building-facts dt { position: relative; padding-right: 8px; font-weight: 400; white-space: nowrap; }
+.building-facts dt::after { content: ""; position: absolute; top: 50%; right: 0; width: 1px; height: 16px; background: #fff; transform: translateY(-50%); }
+.building-facts dd { min-width: 0; white-space: nowrap; }
+.building-facts > div.is-subfact dt::after { display: none; }
 
-@media (max-aspect-ratio: 3/4) {
-  .building-overlay { width: 100%; transform: translateX(100%); }
-  .building-overlay.is-open { transform: translateX(0); }
-}
+/* Scenario_Revised-2 — dimensions/variants from Figma 486:33150, kept as editable DOM layers. */
+.scenario-action { position: absolute; bottom: 96px; left: 55px; width: 310px; height: 148px; padding: 0; overflow: hidden; border: 0; background: transparent; color: #fff; cursor: pointer; }
+.scenario-action { --scenario-symbol-center-y: 62px; --scenario-box-height: 42px; }
+.scenario-box, .scenario-box-blur { position: absolute; top: calc(var(--scenario-symbol-center-y) - var(--scenario-box-height) / 2); left: 50%; width: 208px; height: var(--scenario-box-height); transform: translateX(-50%); transition: width 400ms var(--figma-ease-out), background-color 400ms var(--figma-ease-out), opacity 400ms var(--figma-ease-out); }
+.scenario-box { border: 1px solid #fff; background: transparent; }
+.scenario-box-blur { opacity: 0; background: #fff; filter: blur(3px); }
+.scenario-symbol { position: absolute; top: 0; left: 50%; width: 260px; height: 124px; transform: translateX(-50%); transition: opacity 400ms var(--figma-ease-out); }
+.scenario-symbol-white { color: #fff; opacity: 1; }
+.scenario-symbol-black { color: #000; opacity: 0; }
+.scenario-label { position: absolute; top: 16px; left: 42px; color: #fff; font-family: Inter, Arial, sans-serif; font-size: 13.75px; font-weight: 400; line-height: 16px; opacity: 0; transform: translateX(11px); transition: opacity 400ms var(--figma-ease-out), transform 400ms var(--figma-ease-out); }
+.scenario-action:hover .scenario-box, .scenario-action:focus-visible .scenario-box { width: 230px; background: #fff; }
+.scenario-action:hover .scenario-box-blur, .scenario-action:focus-visible .scenario-box-blur { width: 230px; opacity: 1; }
+.scenario-action:hover .scenario-symbol-white, .scenario-action:focus-visible .scenario-symbol-white { opacity: 0; }
+.scenario-action:hover .scenario-symbol-black, .scenario-action:focus-visible .scenario-symbol-black { opacity: 1; }
+.scenario-action:hover .scenario-label, .scenario-action:focus-visible .scenario-label { opacity: 1; transform: translateX(0); }
+.scenario-action:focus-visible { outline: 1px solid rgba(255,255,255,.65); outline-offset: -1px; }
 
 @media (prefers-reduced-motion: reduce) {
   .intro-screen, .intro-screen *, .intro-screen *::before, .intro-screen *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
@@ -268,4 +347,5 @@ button { color: inherit; font: inherit; }
   .ui-layer:not(.is-entered) .coordinates { transform: none; }
   .ui-layer.is-entered .index-trigger,
   .ui-layer.is-entered .coordinates { transition: opacity 140ms ease-out; }
+  .building-default, .building-hover, .scenario-action, .scenario-action * { transition-duration: 1ms !important; }
 }
