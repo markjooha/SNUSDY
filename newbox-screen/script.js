@@ -2,9 +2,8 @@
  * Moving-poster configuration
  * ---------------------------
  * To change the overall duration, adjust `cellIntervalMs` below.
- * The three original scenes stay at the start of each cycle. The twelve
- * additional scenes are reshuffled once per cycle; edit the two lists below
- * to add, remove, or reorder scenes.
+ * All 15 scenes are reshuffled once per cycle. Edit `ANIMATION_SEQUENCE`
+ * below to add, remove, or reorder scenes.
  * A custom scene needs an `id` and a `createOrder()` function that returns
  * every { column, row } coordinate once. Coordinates are 1-based.
  */
@@ -344,15 +343,11 @@ function createQuadrantCycleOrder() {
   ]);
 }
 
-// These original scenes retain their established order at the start of every cycle.
-const FIXED_ANIMATION_SEQUENCE = Object.freeze([
+// Every entry appears once per cycle, in a newly shuffled order.
+const ANIMATION_SEQUENCE = Object.freeze([
   { id: 'diagonal', createOrder: createDiagonalOrder },
   { id: 'horizontal', createOrder: createHorizontalOrder },
   { id: 'vertical', createOrder: createVerticalOrder },
-]);
-
-// Every entry below appears once per cycle, in a newly shuffled order.
-const SHUFFLED_ANIMATION_SEQUENCE = Object.freeze([
   { id: 'centre-ripple', createOrder: createCentreRippleOrder },
   { id: 'four-corners', createOrder: createFourCornersOrder },
   { id: 'spiral', createOrder: createSpiralOrder },
@@ -365,11 +360,6 @@ const SHUFFLED_ANIMATION_SEQUENCE = Object.freeze([
   { id: 'cluster-growth', createOrder: createClusterGrowthOrder },
   { id: 'sine-wave', createOrder: createSineWaveOrder },
   { id: 'quadrant-cycle', createOrder: createQuadrantCycleOrder },
-]);
-
-const ANIMATION_SEQUENCE = Object.freeze([
-  ...FIXED_ANIMATION_SEQUENCE,
-  ...SHUFFLED_ANIMATION_SEQUENCE,
 ]);
 
 /** Returns a fresh Fisher-Yates shuffle without modifying the source list. */
@@ -404,10 +394,7 @@ let sceneCycleIndex = 0;
 
 function getNextScene() {
   if (sceneCycleIndex >= sceneCycle.length) {
-    sceneCycle = [
-      ...FIXED_ANIMATION_SEQUENCE,
-      ...shuffleScenes(SHUFFLED_ANIMATION_SEQUENCE),
-    ];
+    sceneCycle = shuffleScenes(ANIMATION_SEQUENCE);
     sceneCycleIndex = 0;
   }
 
