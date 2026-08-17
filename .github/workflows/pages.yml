@@ -1,10 +1,11 @@
-name: Deploy Theta to GitHub Pages
+name: Deploy site to GitHub Pages
 
 on:
   push:
     branches: [main]
     paths:
       - "Theta/**"
+      - "newbox-screen/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -28,10 +29,15 @@ jobs:
         uses: actions/checkout@v4
       - name: Configure Pages
         uses: actions/configure-pages@v5
-      - name: Upload Theta artifact
+      - name: Prepare site artifact
+        run: |
+          mkdir -p _site/newbox-screen
+          cp -a Theta/. _site/
+          cp -a newbox-screen/. _site/newbox-screen/
+      - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "./Theta"
+          path: "./_site"
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
