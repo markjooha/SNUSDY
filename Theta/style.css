@@ -147,7 +147,7 @@ button { color: inherit; font: inherit; }
 
 .page7-detail { position: absolute; z-index: 1; inset: 0; margin: 0; opacity: 0; pointer-events: none; transition: opacity 550ms var(--figma-ease-in); }
 .page7-detail p, .page7-detail h1 { position: absolute; margin: 0; color: #fff; }
-.page7-logotype { position: absolute; top: 128px; left: 1105px; display: block; width: 148.909px; height: 372.909px; transition: top 550ms var(--figma-ease-in); }
+.page7-logotype { position: absolute; top: 128px; left: 1105px; display: block; width: 148.909px; height: 372.909px; transition: top 550ms var(--figma-ease-in), left 550ms var(--figma-ease-in), width 550ms var(--figma-ease-in), height 550ms var(--figma-ease-in); }
 .page7-about-detail h1 { top: 149px; left: 1403px; transform: translateX(-50%); font-family: "Pretendard", sans-serif; font-size: 40px; font-weight: 600; line-height: normal; text-align: center; white-space: nowrap; }
 .page7-rule { position: absolute; top: 213px; left: 1327px; width: 477px; height: 2px; background: #fff; }
 .page7-description { top: 235px; left: 1327px; width: 477px; font-family: "Pretendard", sans-serif; font-size: 18px; font-weight: 400; line-height: 36px; text-align: justify; }
@@ -173,7 +173,14 @@ button { color: inherit; font: inherit; }
 .intro-page7.is-about-hovered .page7-hover-shade-bottom { opacity: .25; }
 .intro-page7.is-about-hovered .page7-grid-vertical { opacity: .2; }
 .intro-page7.is-about-hovered .page7-about-detail { opacity: 1; transition: opacity 600ms var(--figma-ease-out); }
-.intro-page7.is-about-hovered .page7-logotype { top: 85.05px; transition: top 600ms var(--figma-ease-out); }
+.intro-page7.is-about-hovered .page7-logotype {
+  /* Keep the Figma hover state's top-center anchor fixed while enlarging 120%. */
+  top: 85.05px;
+  left: 1090.109px;
+  width: 178.691px;
+  height: 447.491px;
+  transition: top 600ms var(--figma-ease-out), left 600ms var(--figma-ease-out), width 600ms var(--figma-ease-out), height 600ms var(--figma-ease-out);
+}
 
 .intro-page7.is-map-hovered .page7-map .page7-choice-box,
 .intro-page7.is-map-hovered .page7-map .page7-choice-glow { left: 8.928571%; width: 82.142857%; }
@@ -215,12 +222,57 @@ button { color: inherit; font: inherit; }
 .about-credit-team, .about-credit-members { position: absolute; margin: 0; white-space: nowrap; }
 .about-credit-team { top: 10px; left: 2px; font-size: 18px; font-weight: 600; line-height: 24px; }
 .about-credit-members { top: 13px; left: 118px; font-size: 15.283px; font-weight: 400; line-height: 20px; }
-.about-end-line { position: absolute; right: 0; bottom: 0; left: 0; display: block; height: 4px; background: rgba(255, 255, 255, .02); }
+/* This was only the Figma overflow/scroll boundary guide, not authored content. */
+.about-end-line { display: none; }
 .about-back { z-index: 5; top: 98px; left: calc(66.67% + 381px); width: 80px; height: 35.152px; border: 1px solid #fff; border-radius: 10.101px; background: rgba(16, 16, 18, .5); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
 .about-back-arrow { position: absolute; top: 31.61%; right: 38.04%; bottom: 26.44%; left: 37.88%; display: block; }
 .about-back-arrow img { position: absolute; top: -3.39%; right: -2.59%; bottom: -3.39%; left: -3.67%; display: block; width: calc(100% + 6.26%); height: calc(100% + 6.78%); }
 .about-back { transition: background-color 400ms var(--figma-ease-out); }
 .about-back:hover, .about-back:focus-visible { background: rgba(255, 255, 255, .25); outline: none; }
+
+/* Page-7 → About: start on a black canvas, then reveal the authored layers
+   from the top down. Every layer has the requested 1000ms Ease Out dissolve
+   and 5px upward settling motion; only their start times are staggered. */
+.intro-about.is-about-enter .about-header p,
+.intro-about.is-about-enter .about-rule,
+.intro-about.is-about-enter .about-top-blur,
+.intro-about.is-about-enter .about-copy,
+.intro-about.is-about-enter .about-photo,
+.intro-about.is-about-enter .about-credits,
+.intro-about.is-about-enter .about-back {
+  opacity: 0;
+  transform: translateY(5px);
+}
+.intro-about.is-about-enter .about-header p { --about-enter-delay: 0ms; }
+.intro-about.is-about-enter .about-rule { --about-enter-delay: 80ms; }
+.intro-about.is-about-enter .about-top-blur { --about-enter-delay: 120ms; }
+.intro-about.is-about-enter .about-back { --about-enter-delay: 160ms; }
+.intro-about.is-about-enter .about-copy { --about-enter-delay: 220ms; }
+.intro-about.is-about-enter .about-photo-8 { --about-enter-delay: 270ms; }
+.intro-about.is-about-enter .about-photo-1 { --about-enter-delay: 340ms; }
+.intro-about.is-about-enter .about-photo-12 { --about-enter-delay: 410ms; }
+.intro-about.is-about-enter .about-photo-4 { --about-enter-delay: 480ms; }
+.intro-about.is-about-enter .about-photo-5 { --about-enter-delay: 550ms; }
+.intro-about.is-about-enter .about-photo-14 { --about-enter-delay: 620ms; transform: rotate(180deg) translateY(5px); }
+.intro-about.is-about-enter .about-photo-2 { --about-enter-delay: 690ms; }
+.intro-about.is-about-enter .about-photo-11 { --about-enter-delay: 760ms; }
+.intro-about.is-about-enter .about-photo-10 { --about-enter-delay: 830ms; }
+.intro-about.is-about-enter .about-photo-9 { --about-enter-delay: 900ms; }
+.intro-about.is-about-enter .about-credits { --about-enter-delay: 970ms; }
+
+.intro-about.is-about-enter.is-entering .about-header p,
+.intro-about.is-about-enter.is-entering .about-rule,
+.intro-about.is-about-enter.is-entering .about-top-blur,
+.intro-about.is-about-enter.is-entering .about-copy,
+.intro-about.is-about-enter.is-entering .about-photo,
+.intro-about.is-about-enter.is-entering .about-credits,
+.intro-about.is-about-enter.is-entering .about-back {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 1000ms var(--figma-ease-out) var(--about-enter-delay, 0ms), transform 1000ms var(--figma-ease-out) var(--about-enter-delay, 0ms);
+}
+.intro-about.is-about-enter.is-entering .about-photo-14 { transform: rotate(180deg) translateY(0); }
+
 .intro-about.is-from-about-transition .about-header,
 .intro-about.is-from-about-transition .about-scroll,
 .intro-about.is-from-about-transition .about-back { opacity: 0; }
@@ -353,12 +405,14 @@ button { color: inherit; font: inherit; }
 .map-zoom-reset:focus-visible, .map-zoom-step:focus-visible { outline: 1px solid rgba(255, 255, 255, .72); outline-offset: 1px; }
 .map-zoom-stepper { position: absolute; top: 45px; left: 0; width: 32px; height: 70px; }
 .map-zoom-stepper-base { position: absolute; inset: 0; display: block; width: 32px; height: 70px; pointer-events: none; }
+.map-zoom-stepper-hover { position: absolute; inset: 0; display: block; width: 32px; height: 70px; opacity: 0; pointer-events: none; transition: opacity 300ms var(--figma-ease-out); }
 .map-zoom-step { position: absolute; left: 0; overflow: hidden; }
-.map-zoom-step img { position: absolute; left: 0; display: block; width: 32px; height: 70px; opacity: 0; pointer-events: none; transition: opacity 300ms var(--figma-ease-out); }
-.map-zoom-step:hover img, .map-zoom-step:focus-visible img { opacity: 1; }
+.map-zoom-stepper:has(.map-zoom-in:hover) .map-zoom-stepper-hover-in,
+.map-zoom-stepper:has(.map-zoom-in:focus-visible) .map-zoom-stepper-hover-in,
+.map-zoom-stepper:has(.map-zoom-out:hover) .map-zoom-stepper-hover-out,
+.map-zoom-stepper:has(.map-zoom-out:focus-visible) .map-zoom-stepper-hover-out { opacity: 1; }
 .map-zoom-in { top: 0; height: 34.667px; }
 .map-zoom-out { top: 34.667px; height: 35.333px; }
-.map-zoom-out img { top: -34.667px; }
 
 /* The ruler is right-anchored: longer real-world intervals grow toward the map,
    while its end remains aligned with the Figma 50px viewport inset. */
@@ -441,6 +495,7 @@ button { color: inherit; font: inherit; }
    sequences can be reused unmodified. Their 1920px stage is clipped by this
    shell at the exact width left of the persistent 420px Build Overlay. */
 .scenario-embedded { background: #000; }
+.scenario-embedded-3 { box-sizing: border-box; border: 1px solid #fff; }
 .scenario-embedded-11 { box-sizing: border-box; border: 1px solid #fff; }
 .scenario-embedded-frame {
   position: absolute; inset: 0 auto auto 0; display: block; width: 1920px; height: 1080px;

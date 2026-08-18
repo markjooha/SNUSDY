@@ -1,0 +1,239 @@
+@font-face {
+  font-family: "Pretendard";
+  src: url("./font/PretendardVariable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  background: #000;
+  font-family: "Pretendard", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body,
+.scenario3-page {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font: inherit; }
+
+.scenario3-page {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+/* Scenario 3 occupies Build-03's 1500px map column. The untouched 420px
+   space on the right is preserved for the future Build Overlay integration. */
+.scenario3-stage {
+  --scenario3-scale: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  background: #000;
+  transform: translate(-50%, -50%) scale(var(--scenario3-scale));
+  transform-origin: center;
+}
+
+.scenario3-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1500px;
+  height: 1080px;
+  overflow: hidden;
+  background: #000;
+}
+
+.scenario3-intro,
+.scenario3-main,
+.scenario3-screen {
+  position: absolute;
+  inset: 0;
+}
+
+.scenario3-intro {
+  z-index: 2;
+  background: #000;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 400ms cubic-bezier(.22, .72, .18, 1);
+}
+
+/* S3_Intro-1 and S3_Intro-2 only differ by the displayed count. This DOM
+   counter keeps their exact 100px Pretendard geometry without baking an SVG. */
+.scenario3-count {
+  position: absolute;
+  top: 490px;
+  left: 569px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 280px;
+  height: 100px;
+  color: #fff;
+  font-size: 100px;
+  font-weight: 600;
+  line-height: 30px;
+  white-space: nowrap;
+}
+
+.scenario3-count [data-scenario3-count] {
+  display: block;
+  width: 200px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.scenario3-degree {
+  display: block;
+  width: 50px;
+  margin-left: 5px;
+  text-align: center;
+}
+
+.scenario3-main {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario3-page.is-main-ready .scenario3-intro { opacity: 0; }
+.scenario3-page.is-main-ready .scenario3-main {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scenario3-screen {
+  z-index: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario3-screen.is-current {
+  z-index: 1;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scenario3-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 1500px;
+  height: 1080px;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* The default button is part of each supplied S3_Main export. The transparent
+   hit target overlays it; its Variant2 state matches S3_Button's white fill,
+   black label and 350ms Ease Out dissolve. */
+.scenario3-next {
+  position: absolute;
+  top: 948px;
+  left: 629px;
+  width: 242px;
+  height: 63px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: transparent;
+  cursor: pointer;
+  transition: background-color 350ms cubic-bezier(.22, .72, .18, 1), border-color 350ms cubic-bezier(.22, .72, .18, 1), color 350ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario3-next span {
+  display: block;
+  font-size: 25px;
+  font-weight: 500;
+  line-height: 50px;
+  opacity: 0;
+  transition: opacity 350ms cubic-bezier(.22, .72, .18, 1);
+  white-space: nowrap;
+}
+
+.scenario3-next:hover,
+.scenario3-next:focus-visible {
+  border-color: #fff;
+  background: #fff;
+  color: #000;
+}
+
+.scenario3-next:hover span,
+.scenario3-next:focus-visible span { opacity: 1; }
+
+.scenario3-next:focus-visible,
+.scenario3-back:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, .9);
+  outline-offset: 3px;
+}
+
+/* Cover the exported S3_Main-05 label, then render the shared Scenario_Back
+   component in its place so duplicate "돌아가기" labels cannot overlap. */
+.scenario3-back {
+  position: absolute;
+  top: 975px;
+  left: 686px;
+  width: 129px;
+  height: 65px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  background: #000;
+  cursor: pointer;
+}
+
+.scenario3-back img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 129px;
+  height: 65px;
+}
+
+.scenario3-back-default {
+  opacity: 1;
+  transition: opacity 200ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario3-back-hover {
+  opacity: 0;
+  transition: opacity 200ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario3-back:hover .scenario3-back-default,
+.scenario3-back:focus-visible .scenario3-back-default { opacity: 0; }
+.scenario3-back:hover .scenario3-back-hover,
+.scenario3-back:focus-visible .scenario3-back-hover { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario3-intro,
+  .scenario3-main,
+  .scenario3-screen,
+  .scenario3-next,
+  .scenario3-next span,
+  .scenario3-back-default,
+  .scenario3-back-hover { transition-duration: 1ms; }
+}

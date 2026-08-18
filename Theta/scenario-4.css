@@ -1,0 +1,63 @@
+@font-face {
+  font-family: "Pretendard";
+  src: url("./font/PretendardVariable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+}
+
+:root { color-scheme: dark; background: #000; font-family: "Pretendard", sans-serif; }
+* { box-sizing: border-box; }
+html, body, .scenario4-page { width: 100%; min-width: 0; height: 100%; min-height: 0; margin: 0; }
+body { overflow: hidden; background: #000; color: #fff; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; }
+
+.scenario4-page { position: relative; overflow: hidden; background: #000; }
+.scenario4-stage {
+  position: absolute; top: 50%; left: 50%; width: 1920px; height: 1080px;
+  background: #000; transform: translate(-50%, -50%) scale(var(--scenario4-scale, 1)); transform-origin: center;
+}
+.scenario4-frame { position: absolute; top: 0; left: 0; width: 1230px; height: 1080px; overflow: hidden; background: #000; }
+.scenario4-intro, .scenario4-main, .scenario4-scroll { position: absolute; inset: 0; }
+.scenario4-intro { z-index: 2; border: 1px solid #fff; background: #000; opacity: 1; pointer-events: none; transition: opacity 400ms ease-out; }
+.scenario4-count {
+  position: absolute; top: 490px; left: 422px; display: block; width: 252px; height: 100px;
+  color: #fff; font-size: 100px; font-weight: 600; line-height: 30px; text-align: right; white-space: nowrap;
+}
+.scenario4-degree { display: inline-block; width: 50px; margin-left: 5px; text-align: center; }
+.scenario4-main { z-index: 1; pointer-events: none; }
+.scenario4-page.is-main-ready .scenario4-intro { opacity: 0; }
+.scenario4-page.is-main-ready .scenario4-main { pointer-events: auto; }
+
+.scenario4-scroll { overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none; }
+.scenario4-scroll::-webkit-scrollbar { display: none; }
+/* The updated S4_Main-Full artboard is 1230 × 8452, so scrolling ends at its final pixel. */
+.scenario4-scroll-content { position: relative; width: 1230px; height: 8452px; overflow: hidden; border: 1px solid #fff; background: #000; }
+.scenario4-reveal { opacity: 0; transform: translateY(5px); transition: opacity 700ms cubic-bezier(.22, .72, .18, 1), transform 700ms cubic-bezier(.22, .72, .18, 1); }
+.scenario4-reveal.is-visible { opacity: 1; transform: translateY(0); }
+.scenario4-art-slice { position: absolute; left: 0; width: 1228px; overflow: hidden; pointer-events: none; }
+.scenario4-art-slice img { position: absolute; top: 0; left: 0; display: block; width: 1230px; height: 8452px; max-width: none; }
+.scenario4-art-title { top: 0; height: 420px; }
+.scenario4-art-cue { top: 940px; height: 90px; }
+.scenario4-art-cue img { top: -940px; }
+.scenario4-art-quote { top: 1370px; height: 230px; }
+.scenario4-art-quote img { top: -1370px; }
+.scenario4-art-photo { top: 3180px; height: 992px; }
+.scenario4-art-photo img { top: -3180px; }
+.scenario4-art-timeline { top: 4960px; height: 370px; }
+.scenario4-art-timeline img { top: -4960px; }
+.scenario4-story-lines { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.scenario4-text-line { position: absolute; left: 0; width: 1228px; height: 50px; background-repeat: no-repeat; background-size: 1230px 8452px; opacity: 0; transform: translateY(5px); transition: opacity 700ms cubic-bezier(.22, .72, .18, 1), transform 700ms cubic-bezier(.22, .72, .18, 1); }
+.scenario4-text-line.is-visible { opacity: 1; transform: translateY(0); }
+
+/* Replace the artwork's static control only inside the shared component's exact bounds. */
+.scenario4-back { position: absolute; top: 8235px; left: 551px; width: 129px; height: 65px; padding: 0; overflow: hidden; border: 0; background: #000; cursor: pointer; opacity: 0; transform: translateY(5px); transition: opacity 700ms cubic-bezier(.22, .72, .18, 1), transform 700ms cubic-bezier(.22, .72, .18, 1); }
+.scenario4-back.is-visible { opacity: 1; transform: translateY(0); }
+.scenario4-back img { position: absolute; inset: 0; display: block; width: 129px; height: 65px; }
+.scenario4-back-hover { opacity: 0; transition: opacity 200ms cubic-bezier(.22, .72, .18, 1); }
+.scenario4-back:hover .scenario4-back-hover, .scenario4-back:focus-visible .scenario4-back-hover { opacity: 1; }
+.scenario4-back:focus-visible { outline: 1px solid rgba(255, 255, 255, .9); outline-offset: -1px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario4-intro, .scenario4-main, .scenario4-reveal, .scenario4-text-line, .scenario4-back { transition-duration: 1ms; }
+}

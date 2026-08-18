@@ -3,27 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>시나리오 7 — 편의점 폐기</title>
+    <title>시나리오 7 — 비에이원시스템</title>
     <link rel="stylesheet" href="./scenario-7.css" />
     <script src="./scenario-7.js" defer></script>
   </head>
   <body>
-    <main class="scenario7-page" aria-label="시나리오 7: 편의점 폐기">
+    <main class="scenario7-page" aria-label="시나리오 7: 비에이원시스템">
       <div class="scenario7-stage">
-        <section class="scenario7-frame" aria-label="편의점 폐기 물품 사건 시나리오">
-          <div class="scenario7-story" aria-live="polite">
-            <img
-              class="scenario7-main-art"
-              src="./scenario/scenario-7/S7_Main-1.svg"
-              alt="편의점 점주와 아르바이트생의 대화"
-              draggable="false"
-            />
+        <section class="scenario7-frame" aria-label="비에이원시스템 시나리오">
+          <div class="scenario7-main" aria-live="polite">
+            <button class="scenario7-item scenario7-paper" type="button" data-scenario7-item="paper" aria-label="사직서 자세히 보기">
+              <span class="scenario7-item-art"><img src="./scenario/scenario-7/Paper.png" alt="서재훈의 사직서" draggable="false" /></span>
+            </button>
+            <button class="scenario7-item scenario7-note" type="button" data-scenario7-item="note" aria-label="일기 자세히 보기">
+              <span class="scenario7-item-art"><img src="./scenario/scenario-7/Note.png" alt="서재훈의 일기" draggable="false" /></span>
+            </button>
+          </div>
+
+          <div class="scenario7-detail" aria-hidden="true">
+            <button class="scenario7-detail-return" type="button" aria-label="메인 화면으로 돌아가기"></button>
           </div>
 
           <div class="scenario7-intro" aria-hidden="true">
-            <img class="scenario7-intro-start" src="./scenario/scenario-7/S7_Intro-1.svg" alt="" draggable="false" />
+            <img class="scenario7-intro-art scenario7-intro-art--start" src="./scenario/scenario-7/S7-Intro-1.svg" alt="" draggable="false" />
             <span class="scenario7-count"><span data-scenario7-count>0</span><span class="scenario7-degree">°</span></span>
-            <img class="scenario7-intro-final" src="./scenario/scenario-7/S7_Intro-2.svg" alt="" draggable="false" />
+            <img class="scenario7-intro-art scenario7-intro-art--final" src="./scenario/scenario-7/S7-Intro-2.svg" alt="" draggable="false" />
           </div>
 
           <button class="scenario7-back" type="button" aria-label="시나리오에서 돌아가기">

@@ -1,15 +1,12 @@
 @font-face {
-  font-family: "DS-Digital";
-  src: url("./font/DS-DIGI.TTF") format("truetype");
+  font-family: "Pretendard";
+  src: url("./font/PretendardVariable.ttf") format("truetype");
   font-style: normal;
-  font-weight: 400;
+  font-weight: 45 920;
   font-display: swap;
 }
 
-:root {
-  color-scheme: dark;
-  background: #000;
-}
+:root { color-scheme: dark; background: #000; }
 
 * { box-sizing: border-box; }
 
@@ -37,8 +34,9 @@ button { font: inherit; }
   background: #000;
 }
 
-/* Scenario 7 lives in Build-07's 1500 × 1080 map area. The blank 420px on
-   the right remains available to the map page when this standalone page is merged. */
+/* The standalone document retains the shared 1920 × 1080 map canvas. In the
+   eventual Build-07 overlay, its left 1500px is clipped here and the right
+   420px remains occupied by the map's Build card. */
 .scenario7-stage {
   --scenario7-scale: 1;
   position: absolute;
@@ -62,158 +60,225 @@ button { font: inherit; }
   box-shadow: inset 0 0 0 1px #fff;
 }
 
-.scenario7-story,
-.scenario7-intro {
-  position: absolute;
-  inset: 0;
-}
+.scenario7-main,
+.scenario7-detail,
+.scenario7-intro { position: absolute; inset: 0; }
 
-.scenario7-story {
-  overflow: hidden;
-  cursor: pointer;
-}
+.scenario7-main { z-index: 1; overflow: hidden; }
 
-.scenario7-main-art {
+.scenario7-item {
   position: absolute;
-  inset: 0;
   display: block;
-  width: 1500px;
-  height: 1080px;
-  max-width: none;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Only the supplied Paper SVG enters the stage; it then remains above the
-   existing stack for all following clicks. */
-.scenario7-paper-layer {
-  position: absolute;
-  top: var(--paper-top);
-  left: var(--paper-left);
-  width: 1225px;
-  height: 780px;
-  pointer-events: none;
-  transform: translateY(-1200px) rotate(var(--paper-rotate));
-  transform-origin: center;
-  will-change: transform;
-}
-
-.scenario7-paper-layer.is-entering {
-  transform: translateY(0) rotate(var(--paper-rotate));
-  transition: transform 1200ms cubic-bezier(.22, 1.18, .36, 1);
-}
-
-.scenario7-paper-art {
-  display: block;
-  width: 1225px;
-  height: 780px;
-  max-width: none;
-  pointer-events: none;
-  user-select: none;
-}
-
-.scenario7-intro {
-  z-index: 2;
-  overflow: hidden;
-  background: #000;
-  pointer-events: none;
-}
-
-.scenario7-count {
-  position: absolute;
-  z-index: 1;
-  top: 489px;
-  left: 50%;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  min-width: 260px;
-  color: #fff;
-  font-family: "DS-Digital", monospace;
-  font-size: 100px;
-  font-weight: 400;
-  line-height: 100px;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  opacity: 0;
-}
-
-.scenario7-count [data-scenario7-count] {
-  display: block;
-  min-width: 180px;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.scenario7-degree {
-  display: block;
-  margin: 4px 0 0 10px;
-  font-size: 48px;
-  line-height: 48px;
-}
-
-.scenario7-intro-start,
-.scenario7-intro-final {
-  position: absolute;
-  inset: 0;
-  width: 1500px;
-  height: 1080px;
-}
-
-.scenario7-intro-start { opacity: 1; }
-
-.scenario7-intro-final {
-  opacity: 0;
-}
-
-/* S7_Intro-2 holds on the final count briefly, then the whole black panel
-   drops below the frame to reveal S7_Main-1. */
-.scenario7-page.is-counting .scenario7-intro-start { opacity: 0; }
-.scenario7-page.is-counting .scenario7-count { opacity: 1; }
-.scenario7-page.is-intro-final .scenario7-count { opacity: 0; }
-.scenario7-page.is-intro-final .scenario7-intro-final { opacity: 1; }
-.scenario7-page.is-story-ready .scenario7-intro {
-  transform: translateY(1080px);
-  transition: transform 850ms cubic-bezier(.22, .72, .18, 1);
-}
-
-.scenario7-back {
-  position: absolute;
-  z-index: 3;
-  top: 997px;
-  left: 686px;
-  width: 129px;
-  height: 65px;
   padding: 0;
-  overflow: hidden;
   border: 0;
   background: transparent;
   cursor: pointer;
   opacity: 0;
-  transform: translateY(5px);
   pointer-events: none;
-  transition: opacity 420ms cubic-bezier(.22, .72, .18, 1), transform 420ms cubic-bezier(.22, .72, .18, 1);
+  will-change: top, left, width, height, transform, opacity;
 }
 
-.scenario7-back img {
+.scenario7-item-art {
   display: block;
-  width: 129px;
-  height: 65px;
+  width: 100%;
+  height: 100%;
+  transition: transform 220ms cubic-bezier(.22, .72, .18, 1);
 }
 
-.scenario7-back.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
+.scenario7-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  user-select: none;
 }
 
-.scenario7-back:focus-visible {
-  outline: 1px solid rgba(255, 255, 255, .9);
-  outline-offset: -1px;
+/* Positions and rotations are from S7_Main. Both start fully above the
+   artboard and use Figma's Slow Spring-style 1500ms entrance. */
+.scenario7-paper {
+  top: 201.793px;
+  left: 604px;
+  z-index: 1;
+  width: 574px;
+  height: 814px;
+  transform: translateY(-1300px) rotate(-10.3162deg);
+  transform-origin: top left;
+  transition:
+    top 780ms cubic-bezier(.22, .9, .24, 1),
+    left 780ms cubic-bezier(.22, .9, .24, 1),
+    width 780ms cubic-bezier(.22, .9, .24, 1),
+    height 780ms cubic-bezier(.22, .9, .24, 1),
+    transform 1500ms cubic-bezier(.22, 1.14, .36, 1),
+    opacity 1ms linear;
 }
+
+.scenario7-note {
+  top: 261.041px;
+  left: 331.089px;
+  z-index: 2;
+  width: 383px;
+  height: 468px;
+  transform: translateY(-1300px) rotate(6.1394deg);
+  transform-origin: top left;
+  transition:
+    top 780ms cubic-bezier(.22, .9, .24, 1),
+    left 780ms cubic-bezier(.22, .9, .24, 1),
+    width 780ms cubic-bezier(.22, .9, .24, 1),
+    height 780ms cubic-bezier(.22, .9, .24, 1),
+    transform 1500ms cubic-bezier(.22, 1.14, .36, 1),
+    opacity 1ms linear;
+}
+
+.scenario7-page.is-main-ready .scenario7-item { opacity: 1; }
+.scenario7-page.is-entry-complete .scenario7-item { pointer-events: auto; }
+.scenario7-page.is-main-ready .scenario7-note { transform: translateY(0) rotate(6.1394deg); }
+.scenario7-page.is-main-ready .scenario7-paper { transform: translateY(0) rotate(-10.3162deg); }
+.scenario7-page.is-main-ready:not(.is-entry-complete) .scenario7-paper { transition-delay: 320ms; }
+.scenario7-page.is-entry-complete .scenario7-item {
+  transition-duration: 780ms, 780ms, 780ms, 780ms, 780ms, 1ms;
+}
+
+/* The item's own transform contains its Figma rotation. These inverse rotation
+   offsets resolve to a screen-space movement of exactly 5px upward. */
+.scenario7-page.is-main-ready .scenario7-paper:hover .scenario7-item-art,
+.scenario7-page.is-main-ready .scenario7-paper:focus-visible .scenario7-item-art {
+  transform: translate(0.896px, -4.919px) scale(1.015);
+}
+
+.scenario7-page.is-main-ready .scenario7-note:hover .scenario7-item-art,
+.scenario7-page.is-main-ready .scenario7-note:focus-visible .scenario7-item-art {
+  transform: translate(-0.535px, -4.971px) scale(1.015);
+}
+
+.scenario7-item:focus-visible { outline: 1px solid rgba(255, 255, 255, .9); outline-offset: 7px; }
+
+.scenario7-detail {
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.scenario7-detail-return {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.scenario7-page.is-detail-open .scenario7-detail { pointer-events: auto; }
+.scenario7-page.is-detail-note .scenario7-note {
+  top: 183.275px;
+  left: 475.902px;
+  width: 574.5px;
+  height: 702px;
+  transform: rotate(2deg);
+  transition-duration: 780ms, 780ms, 780ms, 780ms, 780ms, 1ms;
+  transition-delay: 0ms;
+}
+
+.scenario7-page.is-detail-paper .scenario7-paper {
+  z-index: 3;
+  top: 102.577px;
+  left: 378.688px;
+  width: 631.701px;
+  height: 895.4px;
+  transform: rotate(-.6deg);
+  transition-duration: 780ms, 780ms, 780ms, 780ms, 780ms, 1ms;
+  transition-delay: 0ms;
+}
+
+.scenario7-intro {
+  z-index: 4;
+  overflow: hidden;
+  background: #000;
+  box-shadow: inset 0 0 0 1px #fff;
+  pointer-events: none;
+  transition: opacity 380ms ease-out;
+}
+
+.scenario7-intro-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 1500px;
+  height: 1080px;
+  max-width: none;
+}
+
+.scenario7-intro-art--final,
+.scenario7-count { opacity: 0; }
+
+.scenario7-count {
+  position: absolute;
+  top: 490px;
+  left: 569px;
+  z-index: 1;
+  display: block;
+  width: 260px;
+  height: 100px;
+  color: #fff;
+  font-family: "Pretendard", sans-serif;
+  font-size: 100px;
+  font-weight: 600;
+  line-height: 30px;
+  white-space: nowrap;
+}
+
+.scenario7-count [data-scenario7-count] { width: 200px; text-align: right; }
+.scenario7-count [data-scenario7-count] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100px;
+}
+
+.scenario7-degree {
+  position: absolute;
+  top: 35px;
+  left: 208px;
+  width: 50px;
+  text-align: center;
+}
+
+.scenario7-page.is-counting .scenario7-intro-art--start { opacity: 0; }
+.scenario7-page.is-counting .scenario7-count { opacity: 1; }
+.scenario7-page.is-intro-final .scenario7-count { opacity: 0; }
+.scenario7-page.is-intro-final .scenario7-intro-art--final { opacity: 1; }
+.scenario7-page.is-intro-exiting .scenario7-intro,
+.scenario7-page.is-main-ready .scenario7-intro { opacity: 0; }
+
+.scenario7-back {
+  position: absolute;
+  top: 1011.125px;
+  left: 1367.125px;
+  z-index: 5;
+  width: 96.75px;
+  height: 48.75px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(5px);
+  transition: opacity 280ms ease-out, transform 280ms ease-out;
+}
+
+.scenario7-back img { display: block; width: 100%; height: 100%; }
+.scenario7-page.is-main-ready .scenario7-back { opacity: 1; pointer-events: auto; transform: translateY(0); transition-delay: 1820ms; }
+.scenario7-back:focus-visible { outline: 1px solid rgba(255, 255, 255, .9); outline-offset: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .scenario7-paper-layer,
+  .scenario7-item,
+  .scenario7-item-art,
+  .scenario7-detail,
   .scenario7-intro,
   .scenario7-back { transition-duration: 1ms !important; }
 }

@@ -108,6 +108,9 @@ const BUILDING_OVERLAY_CONTENT = [
   { id: 11, category: '제안뉴레지던스(예정)', address: '서울 우성구 방안동', meta: [44, 190, 199], image: [45, 182, 330, 245], summary: [50, 453, '서울특별시 방안동에 위치한 노후 주거지를 중심으로 지정된 도시정비구역.'], description: '저층 주택과 오래된 상가가 밀집했던 지역으로, 주거환경 개선과 기반시설 확충을 목적으로 단계적인 재개발이 진행되고 있다. 기존의 좁은 골목과 불규칙한 필지를 정비하고 공동주택과 생활 편의시설, 보행 공간 등을 조성할 예정이다. 사업이 완료되면 인근 주거지역 및 상권과 연계된 새로운 생활권이 형성될 것으로 예상되며, 현재는 일부 건축물 철거와 부지 정비가 진행되고 있다.', detail: [54, 531, 321] },
   { id: 12, category: '문화거리', address: '서울 우성구 방안길19-5', meta: [46, 108, 117], image: [46, 182, 330, 219], summary: [45, 427, '서울특별시 우성구 제안동에 위치한 문화거리. 제안동 북부에 위치한 주택가 골목.'], description: '오래된 골목과 저층 건물을 중심으로 카페, 음식점, 소규모 상점 등이 자리하고 있다. 기존 주거지역의 분위기를 유지하면서 다양한 상업·문화 공간이 형성되어 있는 것이 특징이다. 골목을 따라 개성 있는 점포와 휴식 공간을 둘러볼 수 있으며, 인근 공원과 주거지역이 가까워 지역 주민과 방문객이 함께 이용하는 생활형 문화거리로 자리 잡고 있다.', detail: [49, 505, 321] },
 ];
+// Build-09 and Build-12 are associated with each other's information panel in
+// the supplied map. Map hit targets remain unchanged; only panel content swaps.
+const BUILDING_OVERLAY_CONTENT_BY_BUILDING = { 9: 12, 12: 9 };
 const INITIAL_ZOOM = .92;
 // The landing composition previously used a 2339px-wide map export. Keep that
 // exact visual scale, but apply it as a transform to the fixed world-size map.
@@ -188,9 +191,12 @@ const SCENARIO_TWO_ART_URL = new URL('./scenario/scenario-2/S2_Main-Full.svg', w
 // They are embedded in the shared scenario shell so the live map and the 420px
 // Build Overlay remain visible on the right, just as in Scenario 1 and 2.
 const EMBEDDED_SCENARIOS = {
+  3: { id: 3, page: 'scenario-3.html', width: 1500, label: '우성구청 시나리오' },
+  4: { id: 4, page: 'scenario-4.html', width: 1230, label: '신금역 3번출구 포장마차 시나리오' },
   5: { id: 5, page: 'scenario-5.html', width: 1500, label: '힐스테이트 방안 센트럴 시나리오' },
   6: { id: 6, page: 'scenario-6.html', width: 1500, label: '방안근린공원 시나리오' },
   7: { id: 7, page: 'scenario-7.html', width: 1500, label: '비에이원시스템 시나리오' },
+  8: { id: 8, page: 'scenario-8.html', width: 1500, label: '우리24 방안점 시나리오' },
   11: { id: 11, page: 'scenario-11.html', width: 1230, label: '방안 제4재정비촉진구역 시나리오' },
 };
 // Values below come from the Figma prototype reactions (not visual estimates).
@@ -215,9 +221,11 @@ const INTRO = {
     leave: { duration: 550, easing: 'var(--figma-ease-in)' },
     choice: { duration: 511.046886, easing: 'GENTLE' },
     about: { type: 'DISSOLVE', duration: 600, easing: 'var(--figma-ease-out)' },
-    map: { type: 'DISSOLVE', duration: 1000, easing: 'var(--figma-ease-out)' },
+    map: { type: 'DISSOLVE', duration: 1200, easing: 'var(--figma-ease-out)' },
   },
-  aboutTransition: { delay: 200, type: 'SMART_ANIMATE', duration: 1000, easing: 'var(--figma-ease-out)' },
+  // About is entered directly from Page-7. Each layer itself moves/fades for
+  // 1000ms; this duration keeps the entry state mounted through the stagger.
+  aboutEnter: { type: 'SMART_ANIMATE', duration: 2100, easing: 'var(--figma-ease-out)' },
   aboutBack: { type: 'DISSOLVE', duration: 1000, easing: 'var(--figma-ease-out)' },
   mapBack: { type: 'DISSOLVE', duration: 1200, easing: 'var(--figma-ease-out)' },
   indexTrace: { delay: 1, duration: 400, easing: 'var(--figma-ease-out)' },
@@ -332,12 +340,12 @@ function createScenarioButton() {
   return button;
 }
 
-function createBuildingOverlay(build, content) {
+function createBuildingOverlay(build, content, contentBuild = build) {
   const overlay = document.createElement('aside');
   overlay.className = 'building-overlay';
   overlay.dataset.buildingOverlay = String(build.id);
   overlay.setAttribute('aria-hidden', 'true');
-  overlay.setAttribute('aria-label', `${build.name} 정보`);
+  overlay.setAttribute('aria-label', `${contentBuild.name} 정보`);
 
   const close = document.createElement('button');
   close.type = 'button';
@@ -347,7 +355,7 @@ function createBuildingOverlay(build, content) {
 
   const title = document.createElement('h1');
   title.className = 'building-title';
-  title.textContent = build.name;
+  title.textContent = contentBuild.name;
 
   const meta = document.createElement('p');
   meta.className = 'building-meta';
@@ -366,8 +374,8 @@ function createBuildingOverlay(build, content) {
   const [imageLeft, imageTop, imageWidth, imageHeight] = content.image;
   const image = document.createElement('img');
   image.className = 'building-image';
-  image.src = `./assets/map/Build-Overlay/image/Build_image-${build.id}.png`;
-  image.alt = `${build.name} 사진`;
+  image.src = `./assets/map/Build-Overlay/image/Build_image-${contentBuild.id}.png`;
+  image.alt = `${contentBuild.name} 사진`;
   image.draggable = false;
   image.style.setProperty('--building-image-left', `${imageLeft}px`);
   image.style.setProperty('--building-image-top', `${imageTop}px`);
@@ -421,9 +429,12 @@ function createBuildingOverlay(build, content) {
 function setupBuildingOverlays() {
   uiLayer.querySelectorAll('[data-building-overlay]').forEach((overlay) => overlay.remove());
   const contentById = new Map(BUILDING_OVERLAY_CONTENT.map((content) => [content.id, content]));
+  const buildingById = new Map(BUILDINGS.map((building) => [building.id, building]));
   BUILDINGS.forEach((build) => {
-    const content = contentById.get(build.id);
-    if (content) uiLayer.append(createBuildingOverlay(build, content));
+    const contentId = BUILDING_OVERLAY_CONTENT_BY_BUILDING[build.id] ?? build.id;
+    const content = contentById.get(contentId);
+    const contentBuild = buildingById.get(contentId);
+    if (content && contentBuild) uiLayer.append(createBuildingOverlay(build, content, contentBuild));
   });
   buildingOverlays = [...uiLayer.querySelectorAll('[data-building-overlay]')];
   buildingOverlays.forEach((overlay) => {
@@ -1259,9 +1270,7 @@ function setPage7Hover(kind) {
 
 function enterAbout() {
   if (introTransitioning) return;
-  dissolveIntroTo('aboutTransition', INTRO.page7.about, () => {
-    queueIntro(() => smartAnimateIntroTo('about', INTRO.aboutTransition, 'is-from-about-transition'), INTRO.aboutTransition.delay);
-  });
+  smartAnimateIntroTo('about', INTRO.aboutEnter, 'is-about-enter');
 }
 
 function enterExistingLanding() {
