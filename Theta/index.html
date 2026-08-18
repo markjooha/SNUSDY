@@ -13,8 +13,42 @@
     <main class="app">
       <section class="intro" id="intro" aria-label="Theta 소개">
         <div class="intro-world" id="introWorld">
-          <section class="intro-screen intro-page6 is-active" data-intro-screen="page6" aria-label="Page 6">
-            <button class="intro-start" id="introStart" aria-label="Theta 시작"><span class="intro-page6-title" aria-hidden="true">&lt;Theta&gt;</span><span class="sr-only">Theta 시작</span></button>
+          <section class="intro-screen intro-prelude intro-landing-page is-active" data-intro-screen="landingPage" aria-label="Landing Page">
+            <img class="intro-static-art" src="./assets/intro/Landing-Page.svg" alt="" aria-hidden="true" draggable="false" />
+            <button class="intro-start" id="introLandingStart" aria-label="인트로 시작"><span class="sr-only">인트로 시작</span></button>
+          </section>
+
+          <section class="intro-screen intro-prelude" data-intro-screen="page1" aria-label="Page 1" aria-hidden="true">
+            <img class="intro-static-art" src="./assets/intro/Page-1.svg" alt="" aria-hidden="true" draggable="false" />
+            <button class="intro-skip" type="button" data-intro-skip aria-label="Page 6으로 건너뛰기"><span class="sr-only">Page 6으로 건너뛰기</span></button>
+          </section>
+
+          <section class="intro-screen intro-prelude" data-intro-screen="page2" aria-label="Page 2" aria-hidden="true">
+            <img class="intro-static-art" src="./assets/intro/Page-2.svg" alt="" aria-hidden="true" draggable="false" />
+            <button class="intro-skip" type="button" data-intro-skip aria-label="Page 6으로 건너뛰기"><span class="sr-only">Page 6으로 건너뛰기</span></button>
+          </section>
+
+          <section class="intro-screen intro-prelude" data-intro-screen="page3" aria-label="Page 3" aria-hidden="true">
+            <img class="intro-static-art" src="./assets/intro/Page-3.svg" alt="" aria-hidden="true" draggable="false" />
+            <button class="intro-skip" type="button" data-intro-skip aria-label="Page 6으로 건너뛰기"><span class="sr-only">Page 6으로 건너뛰기</span></button>
+          </section>
+
+          <section class="intro-screen intro-prelude" data-intro-screen="page4" aria-label="Page 4" aria-hidden="true">
+            <img class="intro-static-art" src="./assets/intro/Page-4.svg" alt="" aria-hidden="true" draggable="false" />
+            <button class="intro-skip" type="button" data-intro-skip aria-label="Page 6으로 건너뛰기"><span class="sr-only">Page 6으로 건너뛰기</span></button>
+          </section>
+
+          <section class="intro-screen intro-prelude intro-page5" data-intro-screen="page5" aria-label="Page 5" aria-hidden="true">
+            <img class="intro-static-art" src="./assets/intro/Page-5.svg" alt="" aria-hidden="true" draggable="false" />
+            <div class="intro-photo-stage" aria-hidden="true"><img id="introPhotoFrame" alt="" draggable="false" /></div>
+            <button class="intro-skip" type="button" data-intro-skip aria-label="Page 6으로 건너뛰기"><span class="sr-only">Page 6으로 건너뛰기</span></button>
+          </section>
+
+          <section class="intro-screen intro-prelude-black" data-intro-screen="preludeBlack" aria-label="인트로 전환" aria-hidden="true"></section>
+
+          <section class="intro-screen intro-page6" data-intro-screen="page6" aria-label="Page 6" aria-hidden="true">
+            <img class="intro-static-art" src="./assets/intro/Page-6.svg" alt="" aria-hidden="true" draggable="false" />
+            <button class="intro-start" id="introStart" aria-label="Theta 시작"><span class="sr-only">Theta 시작</span></button>
           </section>
 
           <section class="intro-screen intro-page6t1" data-intro-screen="page6t1" aria-label="Page 6 transition 1" aria-hidden="true">
@@ -55,7 +89,7 @@
             </button>
 
             <div class="page7-detail page7-about-detail" aria-hidden="true">
-              <img class="page7-logotype" src="./temp_data/temp_logotype.svg" alt="Theta" />
+              <img class="page7-logotype" src="./assets/intro-selection/Logotype.svg" alt="Theta" />
               <h1>θ: Theta</h1>
               <i class="page7-rule"></i>
               <p class="page7-description">독립적으로 존재하는 상태를 우리는 문명이라 부르지 않는다. 문명, 혹은 도시는 필연적으로 ‘집적’을 전제로 한다. ‘집적’이란 둘 이상의 대상이 하나의 제한된 공간 안에 함께 놓이는 상태다. 그리고 이러한 둘 이상의 대상이 만나는 순간, 그 사이에는 차이가 발생한다. 차이가 발생하는 순간 대상들 사이에 하나의 ‘모서리’가 형성된다.</p>
@@ -74,29 +108,37 @@
           </section>
 
           <section class="intro-screen intro-about" data-intro-screen="about" aria-label="About" aria-hidden="true">
-            <div class="about-header"><p>θ - Theta</p><i class="about-rule" aria-hidden="true"></i></div>
+            <div class="about-header"><p>Theta θ</p><i class="about-rule" aria-hidden="true"></i></div>
             <div class="about-scroll">
-              <article class="about-copy">
-                <p>독립적으로 존재하는 상태를 우리는 문명이라 부르지 않는다. 문명, 혹은 도시는 필연적으로 ‘집적’을 전제로 한다. ‘집적’이란 둘 이상의 대상이 하나의 제한된 공간 안에 함께 놓이는 상태다. 그리고 이러한 둘 이상의 대상이 만나는 순간, 그 사이에는 차이가 발생한다. 차이가 발생하는 순간 대상들 사이에 하나의 ‘모서리’가 형성된다.</p>
-                <p class="about-empty" aria-hidden="true">&#8203;</p>
-                <p>도시는 이러한 모서리들의 축적 위에서 형성되고 변화해왔다. 서로 다른 이해관계, 속도, 계층, 기능이 맞닿으며 만들어내는 긴장과 마찰은 도시를 특정한 방향으로 움직이게 한다. 즉, 도시는 매끄러운 연속체가 아니라 수많은 모서리들의 집합이다. 모서리 없는 유토피아는 존재하지 않는다. 완전히 충돌 없는 상태는 곧 차이 없는 상태이며, 차이 없는 집적은 도시가 될 수 없기 때문이다.</p>
-                <p class="about-empty" aria-hidden="true">&#8203;</p>
-                <p> • • •</p>
-                <p class="about-empty" aria-hidden="true">&#8203;</p>
-                <p>그러나 모든 모서리가 같은 방식으로 작동하는 것은 아니다. 어떤 모서리는 새로운 가능성을 만들지만, 어떤 모서리는 불균형한 힘의 관계 속에서 형성된다. 특히 오늘날 도시의 많은 모서리들은 대화나 조정보다 자본, 제도, 권력의 논리에 의해 결정된다. 이때 모서리는 단순한 차이의 표면이 아니라 힘의 비대칭이 고착된 구조가 된다.</p>
-                <p class="about-empty" aria-hidden="true">&#8203;</p>
-                <p>왜 이러한 불합리한 모서리를 보아야 하는가. 그 이유는 가장 잘 보이지 않는 곳에서 도시의 작동 원리가 가장 선명하게 드러나기 때문이다. 매끄럽게 유지되는 질서는 자연스럽거나 중립적인 것이 아니라, 특정한 힘의 배치가 만들어낸 결과다. 불합리한 모서리는 그 숨겨진 구조를 드러내는 균열이며, 도시가 누구를 위해 조직되고 누구를 배제하는지를 보여주는 증거다.</p>
-                <p class="about-empty" aria-hidden="true">&#8203;</p>
-                <p> • • •</p>
-                <p class="about-empty" aria-hidden="true">&#8203;</p>
-                <p>따라서 본 프로젝트는 도시 안에 존재하지만 쉽게 인식되지 않는 모서리들을 탐구하고 기록하는 일이다. 특히 힘의 논리에 의해 형성된 불균형한 모서리를 읽어내고, 그것이 만드는 권력 구조를 재구성하여 드러내고자 한다.</p>
-                <p class="about-empty" aria-hidden="true">&#8203;</p>
-                <p class="about-empty" aria-hidden="true">&#8203;</p>
-                <p>서울대학교 디자인 연합 8기 프로젝트 4팀</p>
-                <p>강문경 엄주하 서유진</p>
-                <i class="about-bottom" aria-hidden="true"></i>
-              </article>
-              <div class="about-image-dummy" aria-hidden="true"><p>Image</p><p>from</p><p>Each</p><p>Scenario</p></div>
+              <div class="about-scroll-canvas">
+                <article class="about-copy">
+                  <p>독립적으로 존재하는 상태를 우리는 문명이라 부르지 않는다. 문명, 혹은 도시는 필연적으로 <strong>집적</strong>을 전제로 한다. 집적이란, 둘 이상의 대상이 하나의 제한된 공간 안에 함께 놓이는 상태를 칭한다. 이처럼 둘 이상의 대상이 만나는 순간, 그 사이에는 차이가 발생한다. 그리고 이러한 차이는 도시를 구성하는 하나의 ‘모서리’가 된다.</p>
+                  <p>도시는 이러한 모서리들의 축적 위에서 형성되고 변화해왔다. 서로 다른 이해관계, 속도, 계층이 맞닿으며 만들어내는 긴장과 마찰은 도시를 특정한 방향으로 움직이게 한다. 즉, 도시는 매끄러운 연속체가 아닌 수많은 모서리들의 집합이다.</p>
+                  <p>모서리 없이 매끄러운 유토피아는 존재하지 않는다. 완전히 충돌 없는 상태는 곧 차이 없는 상태이며, 차이가 없는 집적은 도시가 될 수 없기 때문이다. 본 프로젝트는 이처럼 도시 속에 존재하지만 쉽게 인식되지 않는 모서리들을 탐구하고 기록하는 일이다.</p>
+                  <p class="about-dots" aria-label="구분">• • •</p>
+                  <p>본 작업은 이러한 ‘모서리’를 가상의 도시를 통해 보여준다. 이 가상도시는 현실의 도시를 닮은 시뮬라크르적 공간으로, 실제 도시 곳곳에 존재하는 모서리의 모습과 그곳에서 발생할 수 있는 상황을 우의적으로 표현하는 장치로 기능하게 된다.</p>
+                  <p>전시장에 설치된 모형은 영상 속의 가상도시를 물리적인 공간으로 구현한다. 관객은 영상을 통해 ‘모서리’의 순간들을 접하는 동시에, 모형을 통해 이들의 장소를 시각적으로 확인할 수 있다. 모형 내부에 설치된 조명은 이러한 장소성을 영상의 시퀀스에 맞추어 즉각적으로 표시하는 장치로 작동한다. 영상에서 각 시퀀스가 시작되면 그에 상응하는 건물의 내부 조명이 빛나고, 이를 통해 영상 속 사건과 도시 모형의 속 장소가 유기적으로 연결된다.</p>
+                  <p>결국 관객은 영상을 따라 하나의 가상도시를 탐색하고, 모형에서 켜지는 빛을 통해 도시 곳곳에 위치한 이야기의 위치를 발견하게 된다. 이렇게 발견한 장소에서 어떤 이야기가 펼쳐지는지, 그리고 그 장소가 지닌 구체적인 정보는 웹을 통해 자세히 확인할 수 있다.</p>
+                </article>
+
+                <img class="about-photo about-photo-8" src="./assets/photo/photo-8.png" alt="" aria-hidden="true" />
+                <img class="about-photo about-photo-1" src="./assets/photo/photo-1.png" alt="" aria-hidden="true" />
+                <img class="about-photo about-photo-12" src="./assets/photo/photo-12.png" alt="" aria-hidden="true" />
+                <img class="about-photo about-photo-4" src="./assets/photo/photo-4.png" alt="" aria-hidden="true" />
+                <img class="about-photo about-photo-5" src="./assets/photo/photo-5.png" alt="" aria-hidden="true" />
+                <img class="about-photo about-photo-14" src="./assets/photo/photo-14.png" alt="" aria-hidden="true" />
+                <img class="about-photo about-photo-2" src="./assets/photo/photo-2.png" alt="" aria-hidden="true" />
+                <img class="about-photo about-photo-11" src="./assets/photo/photo-11.png" alt="" aria-hidden="true" />
+                <img class="about-photo about-photo-10" src="./assets/photo/photo-10.png" alt="" aria-hidden="true" />
+                <img class="about-photo about-photo-9" src="./assets/photo/photo-9.png" alt="" aria-hidden="true" />
+
+                <div class="about-credits">
+                  <i class="about-credit-rule" aria-hidden="true"></i>
+                  <p class="about-credit-team">프로젝트 4팀</p>
+                  <p class="about-credit-members">강문경&nbsp;&nbsp;서유진&nbsp;&nbsp;엄주하</p>
+                </div>
+                <i class="about-end-line" aria-hidden="true"></i>
+              </div>
             </div>
             <img class="about-top-blur" src="./assets/about-top-blur.png" alt="" aria-hidden="true" />
             <button class="about-back" id="aboutBack" type="button" aria-label="이전 화면으로"><span class="about-back-arrow" aria-hidden="true"><img src="./assets/about-back.svg" alt="" /></span><span class="sr-only">이전 화면으로</span></button>
@@ -137,6 +179,32 @@
         <div class="ui-layer" id="uiLayer">
           <button class="index-trigger" id="indexTrigger" aria-expanded="false" aria-controls="indexOverlay">Index</button>
           <p class="coordinates" id="coordinates" aria-live="polite">0.000 / 0° / -</p>
+
+          <button class="map-back" id="mapBack" type="button" aria-label="선택 화면으로 돌아가기">
+            <span class="map-back-arrow" aria-hidden="true"><img src="./assets/about-back.svg" alt="" /></span>
+          </button>
+
+          <div class="map-zoom-controls" aria-label="지도 확대 및 축소">
+            <button class="map-zoom-reset" id="zoomReset" type="button" aria-label="초기 확대 비율로 되돌리기">
+              <img class="map-zoom-icon" src="./assets/map/Zoom-Zero-Default.svg" alt="" aria-hidden="true" />
+              <img class="map-zoom-icon map-zoom-icon-hover" src="./assets/map/Zoom-Zero-Hover.svg" alt="" aria-hidden="true" />
+            </button>
+            <div class="map-zoom-stepper" aria-label="지도 확대 및 축소">
+              <img class="map-zoom-stepper-base" src="./assets/map/Zoom-Default.svg" alt="" aria-hidden="true" />
+              <button class="map-zoom-step map-zoom-in" id="zoomIn" type="button" aria-label="지도 확대">
+                <img src="./assets/map/Zoom-In-Hover.svg" alt="" aria-hidden="true" />
+              </button>
+              <button class="map-zoom-step map-zoom-out" id="zoomOut" type="button" aria-label="지도 축소">
+                <img src="./assets/map/Zoom-Out-Hover.svg" alt="" aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+
+          <div class="map-scale-indicator" id="mapScaleIndicator" aria-label="지도 축척: 20미터">
+            <span class="map-scale-brand">Theta</span>
+            <span class="map-scale-value" id="mapScaleValue">20m</span>
+            <span class="map-scale-ruler" id="mapScaleRuler" aria-hidden="true"><i></i><b></b><em></em></span>
+          </div>
 
           <aside class="index-overlay" id="indexOverlay" aria-hidden="true" aria-label="건물 인덱스">
             <button class="index-row" type="button" data-index-building="1"><span class="index-row-title">01. 대원 빌라</span><span class="index-row-arrow">&gt;&gt;</span><span class="index-row-detail">건물 세부 정보 확인하기</span></button>

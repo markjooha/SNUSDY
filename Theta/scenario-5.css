@@ -1,0 +1,202 @@
+@font-face {
+  font-family: "Pretendard";
+  src: url("./font/PretendardVariable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  background: #000;
+  font-family: "Pretendard", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body,
+.scenario5-page {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font: inherit; }
+
+.scenario5-page {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+/* Keep the parent page on the existing 1920 × 1080 map grid. S5 itself is the
+   supplied 1500px-wide artboard, leaving Build-05's 420px area untouched on
+   the right when this standalone page is dropped back into the map UI. */
+.scenario5-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  background: #000;
+  transform: translate(-50%, -50%) scale(var(--scenario5-scale, 1));
+  transform-origin: center center;
+}
+
+.scenario5-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1500px;
+  height: 1080px;
+  overflow: hidden;
+  background: #000;
+}
+
+.scenario5-intro,
+.scenario5-main,
+.scenario5-scroll {
+  position: absolute;
+  inset: 0;
+}
+
+.scenario5-intro {
+  z-index: 2;
+  border: 1px solid #fff;
+  background: #000;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 400ms ease-out;
+}
+
+.scenario5-count {
+  position: absolute;
+  top: 490px;
+  left: 571.618px;
+  display: block;
+  width: 255px;
+  height: 100px;
+  color: #fff;
+  font-size: 100px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 30px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.scenario5-degree {
+  display: inline-block;
+  width: 50px;
+  margin-left: 5px;
+  text-align: center;
+}
+
+.scenario5-main {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms ease-out;
+}
+
+.scenario5-page.is-main-ready .scenario5-intro { opacity: 0; }
+.scenario5-page.is-main-ready .scenario5-main {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scenario5-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.scenario5-scroll::-webkit-scrollbar { display: none; }
+
+/* This is deliberately the exact S5_Main-Full artboard height. The scrollable
+   range therefore ends at the supplied frame's final pixel, with no spacer or
+   secondary sequence after the article. */
+.scenario5-scroll-content {
+  position: relative;
+  width: 1500px;
+  height: 3288px;
+  overflow: hidden;
+}
+
+.scenario5-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 1500px;
+  height: 3288px;
+  max-width: none;
+  pointer-events: none;
+}
+
+/* Match the shared Scenario_Back component used by the other map scenarios. */
+.scenario5-back {
+  position: absolute;
+  top: 3171px;
+  left: 685px;
+  width: 129px;
+  height: 65px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #000;
+  color: #fff;
+  cursor: pointer;
+}
+
+.scenario5-back-label {
+  position: absolute;
+  top: 10px;
+  left: 9px;
+  width: 111px;
+  color: #fff;
+  font-family: "Pretendard", sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: normal;
+  text-align: center;
+  white-space: nowrap;
+  transition: transform 200ms var(--figma-ease-out, cubic-bezier(.22, .72, .18, 1)), font-weight 200ms var(--figma-ease-out, cubic-bezier(.22, .72, .18, 1));
+}
+
+.scenario5-back-line {
+  position: absolute;
+  right: 10px;
+  bottom: 2px;
+  left: 9px;
+  display: block;
+  height: 1px;
+  background: #fff;
+  opacity: 0;
+  transform: translateY(0);
+  transition: transform 200ms var(--figma-ease-out, cubic-bezier(.22, .72, .18, 1)), opacity 200ms var(--figma-ease-out, cubic-bezier(.22, .72, .18, 1));
+}
+
+.scenario5-back:hover .scenario5-back-label,
+.scenario5-back:focus-visible .scenario5-back-label { font-weight: 600; transform: translateY(-5px); }
+.scenario5-back:hover .scenario5-back-line,
+.scenario5-back:focus-visible .scenario5-back-line { opacity: 1; transform: translateY(-5px); }
+.scenario5-back:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, .9);
+  outline-offset: -1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario5-intro,
+  .scenario5-main { transition-duration: 1ms; }
+}

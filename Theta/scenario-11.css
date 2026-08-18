@@ -1,0 +1,169 @@
+@font-face {
+  font-family: "Pretendard";
+  src: url("./font/PretendardVariable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  background: #000;
+  font-family: "Pretendard", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body,
+.scenario11-page {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font: inherit; }
+
+.scenario11-page {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+/* The standalone page retains the 1920 × 1080 map coordinate system. In the
+   map, this 1230px-wide frame occupies the space left of Build-11's 420px card. */
+.scenario11-stage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  background: #000;
+  transform: translate(-50%, -50%) scale(var(--scenario11-scale, 1));
+  transform-origin: center center;
+}
+
+.scenario11-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1230px;
+  height: 1080px;
+  overflow: hidden;
+  background: #000;
+}
+
+.scenario11-intro,
+.scenario11-main,
+.scenario11-scroll {
+  position: absolute;
+  inset: 0;
+}
+
+.scenario11-intro {
+  z-index: 2;
+  border: 1px solid #fff;
+  background: #000;
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 400ms ease-out;
+}
+
+/* Coordinates and type scale are taken from S11_Intro-1 / S11_Intro-2. */
+.scenario11-count {
+  position: absolute;
+  top: 490px;
+  left: 422px;
+  display: block;
+  width: 252px;
+  height: 100px;
+  color: #fff;
+  font-size: 100px;
+  font-weight: 600;
+  letter-spacing: 0;
+  line-height: 30px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.scenario11-degree {
+  display: inline-block;
+  width: 50px;
+  margin-left: 5px;
+  text-align: center;
+}
+
+.scenario11-main {
+  z-index: 1;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 400ms ease-out;
+}
+
+.scenario11-page.is-main-ready .scenario11-intro { opacity: 0; }
+.scenario11-page.is-main-ready .scenario11-main {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.scenario11-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.scenario11-scroll::-webkit-scrollbar { display: none; }
+
+/* This is exactly the S11_Main-Full artboard height. The scroll range therefore
+   ends with that frame and cannot continue into an empty follow-on sequence. */
+.scenario11-scroll-content {
+  position: relative;
+  width: 1230px;
+  height: 8358px;
+  overflow: hidden;
+}
+
+.scenario11-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 1230px;
+  height: 8358px;
+  max-width: none;
+  pointer-events: none;
+}
+
+/* The artwork supplies the visible return control; this hit target preserves it
+   as an accessible, working control without redrawing over the supplied SVG. */
+.scenario11-back {
+  position: absolute;
+  top: 8235px;
+  left: 551px;
+  width: 129px;
+  height: 65px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  cursor: pointer;
+}
+
+.scenario11-back:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, .9);
+  outline-offset: -1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario11-intro,
+  .scenario11-main { transition-duration: 1ms; }
+}

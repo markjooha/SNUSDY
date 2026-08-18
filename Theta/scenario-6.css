@@ -1,0 +1,211 @@
+@font-face {
+  font-family: "DS-Digital";
+  src: url("./font/DS-DIGI.TTF") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Pretendard";
+  src: url("./font/PretendardVariable.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 45 920;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  background: #000;
+  font-family: "Pretendard", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body,
+.scenario6-page {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font: inherit; }
+
+.scenario6-page {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+/* Scenario 6 occupies the 1500px-wide map area. The remaining 420px stays
+   empty in this standalone build, matching the eventual Build-06 overlay slot. */
+.scenario6-stage {
+  --scenario6-scale: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  background: #000;
+  transform: translate(-50%, -50%) scale(var(--scenario6-scale));
+  transform-origin: center;
+}
+
+.scenario6-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1500px;
+  height: 1080px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: inset 0 0 0 1px #fff;
+}
+
+.scenario6-intro,
+.scenario6-story {
+  position: absolute;
+  inset: 0;
+}
+
+.scenario6-intro {
+  z-index: 2;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 420ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario6-page.is-story-ready .scenario6-intro { opacity: 0; }
+
+/* S6_Intro uses the supplied DS-Digital face. Keep the degree in the same
+   face so 1–3 digit values retain the Figma-style mechanical alignment. */
+.scenario6-count {
+  position: absolute;
+  top: 489px;
+  left: 50%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 260px;
+  color: #fff;
+  font-family: "DS-Digital", monospace;
+  font-size: 100px;
+  font-weight: 400;
+  line-height: 100px;
+  letter-spacing: 0;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.scenario6-count [data-scenario6-count] {
+  display: block;
+  min-width: 180px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.scenario6-degree {
+  display: block;
+  margin: 4px 0 0 10px;
+  font-size: 48px;
+  line-height: 48px;
+}
+
+.scenario6-story { z-index: 1; }
+
+.scenario6-sequence {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.scenario6-sequence--first {
+  opacity: 0;
+  transition: opacity 450ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario6-page.is-story-ready .scenario6-sequence--first { opacity: 1; }
+
+.scenario6-sequence--second {
+  opacity: 0;
+  transition: opacity 450ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario6-page.is-second-phase .scenario6-sequence--first {
+  opacity: 0;
+  transition: opacity 450ms cubic-bezier(.42, 0, .58, 1);
+}
+
+.scenario6-page.is-second-phase .scenario6-sequence--second { opacity: 1; }
+
+.scenario6-frame-art,
+.scenario6-reveal-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 1500px;
+  height: 1080px;
+  max-width: none;
+}
+
+.scenario6-reveal-art {
+  opacity: 0;
+  clip-path: inset(var(--line-top) 0 calc(1080px - var(--line-bottom)) 0);
+  transition: opacity 840ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario6-reveal-art.is-visible { opacity: 1; }
+
+.scenario6-back {
+  position: absolute;
+  z-index: 3;
+  top: 965px;
+  left: 1185px;
+  width: 129px;
+  height: 65px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(5px);
+  pointer-events: none;
+  transition: opacity 420ms cubic-bezier(.22, .72, .18, 1), transform 420ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario6-back img {
+  display: block;
+  width: 129px;
+  height: 65px;
+}
+
+.scenario6-back.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.scenario6-back:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, .9);
+  outline-offset: -1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario6-intro,
+  .scenario6-sequence,
+  .scenario6-reveal-art,
+  .scenario6-back {
+    transition-duration: 1ms;
+  }
+}

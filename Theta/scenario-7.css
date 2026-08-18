@@ -1,0 +1,219 @@
+@font-face {
+  font-family: "DS-Digital";
+  src: url("./font/DS-DIGI.TTF") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  background: #000;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body,
+.scenario7-page {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+  background: #000;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font: inherit; }
+
+.scenario7-page {
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
+
+/* Scenario 7 lives in Build-07's 1500 × 1080 map area. The blank 420px on
+   the right remains available to the map page when this standalone page is merged. */
+.scenario7-stage {
+  --scenario7-scale: 1;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1920px;
+  height: 1080px;
+  background: #000;
+  transform: translate(-50%, -50%) scale(var(--scenario7-scale));
+  transform-origin: center;
+}
+
+.scenario7-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1500px;
+  height: 1080px;
+  overflow: hidden;
+  background: #000;
+  box-shadow: inset 0 0 0 1px #fff;
+}
+
+.scenario7-story,
+.scenario7-intro {
+  position: absolute;
+  inset: 0;
+}
+
+.scenario7-story {
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.scenario7-main-art {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 1500px;
+  height: 1080px;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Only the supplied Paper SVG enters the stage; it then remains above the
+   existing stack for all following clicks. */
+.scenario7-paper-layer {
+  position: absolute;
+  top: var(--paper-top);
+  left: var(--paper-left);
+  width: 1225px;
+  height: 780px;
+  pointer-events: none;
+  transform: translateY(-1200px) rotate(var(--paper-rotate));
+  transform-origin: center;
+  will-change: transform;
+}
+
+.scenario7-paper-layer.is-entering {
+  transform: translateY(0) rotate(var(--paper-rotate));
+  transition: transform 1200ms cubic-bezier(.22, 1.18, .36, 1);
+}
+
+.scenario7-paper-art {
+  display: block;
+  width: 1225px;
+  height: 780px;
+  max-width: none;
+  pointer-events: none;
+  user-select: none;
+}
+
+.scenario7-intro {
+  z-index: 2;
+  overflow: hidden;
+  background: #000;
+  pointer-events: none;
+}
+
+.scenario7-count {
+  position: absolute;
+  z-index: 1;
+  top: 489px;
+  left: 50%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 260px;
+  color: #fff;
+  font-family: "DS-Digital", monospace;
+  font-size: 100px;
+  font-weight: 400;
+  line-height: 100px;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  opacity: 0;
+}
+
+.scenario7-count [data-scenario7-count] {
+  display: block;
+  min-width: 180px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.scenario7-degree {
+  display: block;
+  margin: 4px 0 0 10px;
+  font-size: 48px;
+  line-height: 48px;
+}
+
+.scenario7-intro-start,
+.scenario7-intro-final {
+  position: absolute;
+  inset: 0;
+  width: 1500px;
+  height: 1080px;
+}
+
+.scenario7-intro-start { opacity: 1; }
+
+.scenario7-intro-final {
+  opacity: 0;
+}
+
+/* S7_Intro-2 holds on the final count briefly, then the whole black panel
+   drops below the frame to reveal S7_Main-1. */
+.scenario7-page.is-counting .scenario7-intro-start { opacity: 0; }
+.scenario7-page.is-counting .scenario7-count { opacity: 1; }
+.scenario7-page.is-intro-final .scenario7-count { opacity: 0; }
+.scenario7-page.is-intro-final .scenario7-intro-final { opacity: 1; }
+.scenario7-page.is-story-ready .scenario7-intro {
+  transform: translateY(1080px);
+  transition: transform 850ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario7-back {
+  position: absolute;
+  z-index: 3;
+  top: 997px;
+  left: 686px;
+  width: 129px;
+  height: 65px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(5px);
+  pointer-events: none;
+  transition: opacity 420ms cubic-bezier(.22, .72, .18, 1), transform 420ms cubic-bezier(.22, .72, .18, 1);
+}
+
+.scenario7-back img {
+  display: block;
+  width: 129px;
+  height: 65px;
+}
+
+.scenario7-back.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.scenario7-back:focus-visible {
+  outline: 1px solid rgba(255, 255, 255, .9);
+  outline-offset: -1px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario7-paper-layer,
+  .scenario7-intro,
+  .scenario7-back { transition-duration: 1ms !important; }
+}

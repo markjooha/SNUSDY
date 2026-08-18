@@ -1,7 +1,11 @@
 const intro = document.querySelector('#intro');
 const introWorld = document.querySelector('#introWorld');
 const introScreens = [...document.querySelectorAll('[data-intro-screen]')];
+const introLandingStart = document.querySelector('#introLandingStart');
 const introStart = document.querySelector('#introStart');
+const introPhotoFrame = document.querySelector('#introPhotoFrame');
+const introPhotoStage = document.querySelector('.intro-photo-stage');
+const introSkipButtons = [...document.querySelectorAll('[data-intro-skip]')];
 const aboutChoice = document.querySelector('#aboutChoice');
 const mapChoice = document.querySelector('#mapChoice');
 const aboutBack = document.querySelector('#aboutBack');
@@ -14,6 +18,12 @@ const canvas = document.querySelector('#mapCanvas');
 const uiLayer = document.querySelector('#uiLayer');
 const coordinates = document.querySelector('#coordinates');
 const indexTrigger = document.querySelector('#indexTrigger');
+const mapBack = document.querySelector('#mapBack');
+const zoomReset = document.querySelector('#zoomReset');
+const zoomIn = document.querySelector('#zoomIn');
+const zoomOut = document.querySelector('#zoomOut');
+const mapScaleIndicator = document.querySelector('#mapScaleIndicator');
+const mapScaleValue = document.querySelector('#mapScaleValue');
 const indexOverlay = document.querySelector('#indexOverlay');
 const closeIndex = document.querySelector('#closeIndex');
 const indexRows = [...document.querySelectorAll('[data-index-building]')];
@@ -21,6 +31,23 @@ let mapArt = canvas.querySelector('.map-art');
 let buildingOverlays = [];
 let activeBuildingId = null;
 let indexHoveredBuildingId = null;
+let scenarioOneOverlay = null;
+let scenarioOneIsOpen = false;
+let scenarioOneIsClosing = false;
+let scenarioOneCountFrame = 0;
+let scenarioOneTimers = [];
+let scenarioOneScrollDrag = null;
+let scenarioTwoOverlay = null;
+let scenarioTwoIsOpen = false;
+let scenarioTwoIsClosing = false;
+let scenarioTwoCountFrame = 0;
+let scenarioTwoTimers = [];
+let scenarioTwoScrollDrag = null;
+let scenarioTwoMainRequested = false;
+let activeEmbeddedScenarioId = null;
+let embeddedScenarioClosing = false;
+let embeddedScenarioCloseTimer = 0;
+const embeddedScenarioOverlays = new Map();
 
 const FIGMA = { width: 1920, height: 1080, mapWidth: 8054, mapHeight: 7449 };
 // Each v2 layer has its map origin marked at the same red center point. The marker is
@@ -82,19 +109,102 @@ const BUILDING_OVERLAY_CONTENT = [
   { id: 12, category: '문화거리', address: '서울 우성구 방안길19-5', meta: [46, 108, 117], image: [46, 182, 330, 219], summary: [45, 427, '서울특별시 우성구 제안동에 위치한 문화거리. 제안동 북부에 위치한 주택가 골목.'], description: '오래된 골목과 저층 건물을 중심으로 카페, 음식점, 소규모 상점 등이 자리하고 있다. 기존 주거지역의 분위기를 유지하면서 다양한 상업·문화 공간이 형성되어 있는 것이 특징이다. 골목을 따라 개성 있는 점포와 휴식 공간을 둘러볼 수 있으며, 인근 공원과 주거지역이 가까워 지역 주민과 방문객이 함께 이용하는 생활형 문화거리로 자리 잡고 있다.', detail: [49, 505, 321] },
 ];
 const INITIAL_ZOOM = .92;
+// The landing composition previously used a 2339px-wide map export. Keep that
+// exact visual scale, but apply it as a transform to the fixed world-size map.
+// This prevents Safari from re-laying out the full SVG tree while transitioning.
+const LANDING_CONTENT_ZOOM = (2339 * 1.05) / FIGMA.mapWidth;
 const SYMBOLS_ZOOM_THRESHOLD = 1.30;
 const ZOOM = { min: .72, max: 1.8, step: .12 };
+const MAP_CONTROLS = { zoomStep: .2 };
+// MainBorder has a 2427.2805 map-unit diameter after the v2 transform. The supplied
+// map calibration maps this distance to 500m in the real world.
+const MAP_SCALE = {
+  referenceWorldLength: MAP_BORDER.width,
+  referenceMeters: 500,
+  levels: [
+    { until: .80, meters: 50 },
+    { until: .90, meters: 25 },
+    { until: 1.30, meters: 20 },
+    { until: Infinity, meters: 10 },
+  ],
+};
 // All passive camera motion is owned by one requestAnimationFrame loop.
 const MOTION = {
   landing: { duration: 1600, easing: 'cubic-bezier(.22,.72,.18,1)' },
   overlay: { duration: 640, easing: 'cubic-bezier(.22,.72,.18,1)', coordinateDelay: 110 },
   drag: { sampleWeight: .28, maxVelocity: .9, damping: .0072, stopVelocity: .012 },
   // Direct wheel response is stronger; accumulated momentum is deliberately restrained.
-  zoom: { wheelImpulse: .000006, immediateFactor: .0002, maxVelocity: .0014, damping: .014, stopVelocity: .000015 },
+  zoom: { wheelImpulse: .000006, immediateFactor: .0002, maxQueuedDelta: .08, maxVelocity: .0014, damping: .014, stopVelocity: .000015, controlDuration: 300 },
   camera: { duration: 560 },
+};
+const SCENARIO_ONE = {
+  width: 1500,
+  height: 1080,
+  contentHeight: 3624,
+  introMove: 1200,
+  introPause: 500,
+  countDuration: 3000,
+  beforeMainPause: 1500,
+  mainMove: 1600,
+  revealDuration: 300,
+  revealStagger: 50,
+};
+// Resolve against the document URL so the scenario art also loads correctly
+// when this site is opened directly from Finder with a file:// URL.
+const SCENARIO_ONE_ART_URL = new URL('./scenario/scenario-1/S1_Main-Full.svg', window.location.href).href;
+// These are the actual Figma vector/text layers that are revealed while scrolling.
+// A black *glyph/path* clone hides the exported SVG's already-visible source layer;
+// the matching white clone then dissolves in. There are intentionally no rectangle
+// masks in this effect.
+const SCENARIO_ONE_REVEALS = [
+  { id: 'vector-47', type: 'vector', src: './scenario/scenario-1/reveal-assets/vector-47.svg', left: 834.3945, top: 1210.5508, width: 102.0911, height: 120.0357 },
+  { id: 'vector-46', type: 'vector', src: './scenario/scenario-1/reveal-assets/vector-46.svg', left: 831.2051, top: 1225.3052, width: 95.7108, height: 104.8825 },
+  { id: 'diary-copy', type: 'diary', left: 117, top: 1230, width: 1268, height: 1699 },
+  { id: 'vector-45', type: 'vector', src: './scenario/scenario-1/reveal-assets/vector-45.svg', left: 964.1719, top: 1216.2769, width: 141.0325, height: 169.0955 },
+  { id: 'vector-64', type: 'vector', src: './scenario/scenario-1/reveal-assets/vector-64.svg', left: 96.4102, top: 2974.6172, width: 274.6893, height: 13.4944 },
+  { id: 'vector-63', type: 'vector', src: './scenario/scenario-1/reveal-assets/vector-63.svg', left: 99.3164, top: 2975.8008, width: 246.0295, height: 15.1156 },
+  { id: 'vector-66', type: 'vector', src: './scenario/scenario-1/reveal-assets/vector-66.svg', left: 778.6055, top: 2982.4258, width: 192.5195, height: 6.0164 },
+  { id: 'vector-65', type: 'vector', src: './scenario/scenario-1/reveal-assets/vector-65.svg', left: 781.8262, top: 2972.9355, width: 191.0331, height: 11.2951 },
+  { id: 'reflection-copy', type: 'text', text: '나쁜아이가하는 생각을 해버렸다', left: 136, top: 3221, width: 561, height: 120 },
+  { id: 'vector-69', type: 'vector', src: './scenario/scenario-1/reveal-assets/vector-69.svg', left: 790.5313, top: 3213.8662, width: 49.3991, height: 33.9799 },
+  { id: 'vector-70', type: 'vector', src: './scenario/scenario-1/reveal-assets/vector-70.svg', left: 826.9746, top: 3237.4756, width: 13.3358, height: 21.3847 },
+  { id: 'tomorrow-copy', type: 'text', text: '내일태권도가기', left: 839, top: 3187, width: 262, height: 120 },
+];
+const SCENARIO_ONE_ROW_TOLERANCE = 64;
+const SCENARIO_TWO = {
+  width: 1227,
+  height: 1080,
+  contentHeight: 12393,
+  introMove: 1200,
+  introPause: 500,
+  countDuration: 3000,
+  beforeMainPause: 1000,
+  mainDissolve: 500,
+  revealDuration: 500,
+  revealViewportMiddle: 540,
+};
+const SCENARIO_TWO_ART_URL = new URL('./scenario/scenario-2/S2_Main-Full.svg', window.location.href).href;
+// These pages were authored as self-contained 1920 × 1080 scenario pages.
+// They are embedded in the shared scenario shell so the live map and the 420px
+// Build Overlay remain visible on the right, just as in Scenario 1 and 2.
+const EMBEDDED_SCENARIOS = {
+  5: { id: 5, page: 'scenario-5.html', width: 1500, label: '힐스테이트 방안 센트럴 시나리오' },
+  6: { id: 6, page: 'scenario-6.html', width: 1500, label: '방안근린공원 시나리오' },
+  11: { id: 11, page: 'scenario-11.html', width: 1230, label: '방안 제4재정비촉진구역 시나리오' },
 };
 // Values below come from the Figma prototype reactions (not visual estimates).
 const INTRO = {
+  prelude: {
+    hold: 4500,
+    photoInterval: 300,
+    photoLastHold: 1000,
+    // Page-5의 마지막 사진은 1초간 유지한 뒤 즉시 검은 화면으로 전환한다.
+    photoDissolve: 0,
+    dissolve: { type: 'DISSOLVE', duration: 500, easing: 'var(--figma-ease-out)' },
+    landingDissolve: { type: 'DISSOLVE', duration: 2500, easing: 'var(--figma-ease-out)' },
+    blackHold: 2000,
+    page6Dissolve: { type: 'DISSOLVE', duration: 1500, easing: 'var(--figma-ease-out)' },
+  },
   page6ToT1: { type: 'DISSOLVE', duration: 550, easing: 'var(--figma-ease-in)' },
   t1: { delay: 500, type: 'SMART_ANIMATE', duration: 900, easing: 'var(--figma-ease-out)' },
   t2: { delay: 600, type: 'SMART_ANIMATE', duration: 1500, easing: 'var(--figma-ease-out)' },
@@ -108,6 +218,7 @@ const INTRO = {
   },
   aboutTransition: { delay: 200, type: 'SMART_ANIMATE', duration: 1000, easing: 'var(--figma-ease-out)' },
   aboutBack: { type: 'DISSOLVE', duration: 1000, easing: 'var(--figma-ease-out)' },
+  mapBack: { type: 'DISSOLVE', duration: 1200, easing: 'var(--figma-ease-out)' },
   indexTrace: { delay: 1, duration: 400, easing: 'var(--figma-ease-out)' },
 };
 let displayScale = getScale();
@@ -117,15 +228,20 @@ let selectedName = '-';
 let drag = null;
 let landingTransitioning = false;
 let returnRequestedDuringTransition = false;
+let mapBackTransitioning = false;
 let motionFrame = 0;
 let motionLastTime = 0;
 let dragVelocity = { x: 0, y: 0 };
 let zoomVelocity = 0;
+let pendingZoomDelta = 0;
 let zoomFocus = null;
 let cameraTween = null;
+let zoomTween = null;
 let introTimers = [];
 let introTransitioning = false;
 let indexTraceTimer = 0;
+let introPhotoTimer = 0;
+const INTRO_PHOTOS = Array.from({ length: 15 }, (_, index) => `./assets/photo/photo-${index + 1}.png`);
 
 function getBuildingAssetRect(build) {
   const [baseWidth, baseHeight] = build.base;
@@ -312,8 +428,623 @@ function setupBuildingOverlays() {
   buildingOverlays.forEach((overlay) => {
     overlay.querySelector('.building-close').addEventListener('click', closeBuildingOverlays);
     overlay.addEventListener('pointerdown', (event) => event.stopPropagation());
+    const scenarioButton = overlay.querySelector('.scenario-action');
+    if (Number(overlay.dataset.buildingOverlay) === 1) scenarioButton.addEventListener('click', openScenarioOne);
+    if (Number(overlay.dataset.buildingOverlay) === 2) scenarioButton.addEventListener('click', openScenarioTwo);
+    if (EMBEDDED_SCENARIOS[Number(overlay.dataset.buildingOverlay)]) {
+      scenarioButton.addEventListener('click', () => openEmbeddedScenario(Number(overlay.dataset.buildingOverlay)));
+    }
   });
 }
+
+function scenarioDuration(duration) {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : duration;
+}
+
+function clearScenarioOneTimers() {
+  scenarioOneTimers.forEach((timer) => window.clearTimeout(timer));
+  scenarioOneTimers = [];
+  if (scenarioOneCountFrame) window.cancelAnimationFrame(scenarioOneCountFrame);
+  scenarioOneCountFrame = 0;
+}
+
+function queueScenarioOne(callback, delay) {
+  const timer = window.setTimeout(() => {
+    scenarioOneTimers = scenarioOneTimers.filter((candidate) => candidate !== timer);
+    callback();
+  }, delay);
+  scenarioOneTimers.push(timer);
+  return timer;
+}
+
+function setScenarioInteractionLock(locked) {
+  uiLayer.classList.toggle('is-scenario-open', locked);
+  [indexTrigger, indexOverlay, ...buildingOverlays].forEach((element) => {
+    element.inert = locked;
+  });
+  if (mapArt) setBuildingLayerAccessibility(mapArt, !locked);
+}
+
+function createScenarioOneDiaryCopy(className) {
+  const copy = document.createElement('div');
+  copy.className = `scenario1-diary-copy ${className}`;
+  const paragraph = (text, className = '') => {
+    const element = document.createElement('p');
+    element.className = className;
+    element.textContent = text;
+    copy.append(element);
+    return element;
+  };
+  const date = paragraph('', 'scenario1-diary-date');
+  [['2013   ', 'is-large'], [' ', ''], ['1 0    ', 'is-large'], ['31    ', ''], ['목', 'is-large'], [' ', '']]
+    .forEach(([text, className]) => {
+      const span = document.createElement('span');
+      span.className = className;
+      span.textContent = text;
+      date.append(span);
+    });
+  paragraph('        엄청 갑자기 겨울이 찾아와서 엄청 춥고무서웠던 날씨');
+  const firstEntry = paragraph('', 'scenario1-diary-first-entry');
+  firstEntry.append(' ');
+  const lead = document.createElement('span');
+  lead.className = 'is-tall';
+  lead.textContent = '오늘은 학교 ';
+  firstEntry.append(lead, '끝나고 집에 바로 안오고싶었다, 집문을 열면 엄마랑 아빠가 또 싸우고있을것 같아서 무서웠기때문이다. 그런데 처음에는 괜찮았다. 그래서 다행이라고 생각을 했다.');
+  paragraph('근데 저녁을먹다가 갑자기 엄마가 울었고, 아빠는 아주 큰 소리로 화를 ㄴㅐㅆ다. 내가 엄마 다리를 붙자고 싸우지마라고 계속 말했지만 엄마랑아빠는 아무도 내 목소리를 듣지 못하는 것 같았다. 나는 무서워서 식탁밑으로 들어가 귀를막고 눈을 꼮 감았다. 그떄는 우리집에 없어졌으면 좋겠다고 생각했다. 그러면 아무도 싸우지 않을것 같기 때문이다. 그런데 그런생각을 한 내가 나쁜 아이인 것 같아서 더 슬퍼졌다.');
+  paragraph('내일도 싸우면 어떡하지? 우리엄마랑아빠가 다시 같이 웃으면서 밥을 먹는 날이 꼭 왔으면 좋겠다. 그게 내 소원이다.');
+  return copy;
+}
+
+function splitScenarioOneCopyIntoRevealParts(copy) {
+  const textNodes = [];
+  const walker = document.createTreeWalker(copy, NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) textNodes.push(walker.currentNode);
+  textNodes.forEach((node) => {
+    const fragment = document.createDocumentFragment();
+    // Korean has no reliable word boundaries for all of this diary copy. Keep
+    // spaces intact and use the specified 50ms word-level fallback instead.
+    node.textContent.split(/(\s+)/).forEach((piece) => {
+      if (!piece) return;
+      if (/^\s+$/.test(piece)) {
+        fragment.append(piece);
+        return;
+      }
+      const part = document.createElement('span');
+      part.className = 'scenario1-reveal-ink-part';
+      part.textContent = piece;
+      fragment.append(part);
+    });
+    node.replaceWith(fragment);
+  });
+}
+
+function buildScenarioOneRevealLayers(content) {
+  const revealLayer = document.createElement('div');
+  revealLayer.className = 'scenario1-reveal-layer';
+
+  SCENARIO_ONE_REVEALS.forEach((entry) => {
+    const item = document.createElement('div');
+    item.className = `scenario1-reveal-item scenario1-reveal-${entry.type}`;
+    item.dataset.revealId = entry.id;
+    item.style.left = `${entry.left}px`;
+    item.style.top = `${entry.top}px`;
+    item.style.width = `${entry.width}px`;
+    item.style.height = `${entry.height}px`;
+
+    if (entry.type === 'vector') {
+      const eraser = document.createElement('img');
+      eraser.className = 'scenario1-vector-eraser';
+      eraser.src = entry.src;
+      eraser.alt = '';
+      const ink = document.createElement('img');
+      ink.className = 'scenario1-vector-ink';
+      ink.src = entry.src;
+      ink.alt = '';
+      item.append(eraser, ink);
+    } else if (entry.type === 'diary') {
+      const ink = createScenarioOneDiaryCopy('scenario1-diary-ink');
+      splitScenarioOneCopyIntoRevealParts(ink);
+      item.append(
+        createScenarioOneDiaryCopy('scenario1-text-eraser'),
+        ink,
+      );
+    } else {
+      const eraser = document.createElement('p');
+      eraser.className = 'scenario1-copy scenario1-text-eraser';
+      eraser.textContent = entry.text;
+      const ink = document.createElement('p');
+      ink.className = 'scenario1-copy scenario1-text-ink';
+      [...entry.text].forEach((character) => {
+        const part = document.createElement('span');
+        part.className = 'scenario1-reveal-ink-part';
+        part.textContent = character;
+        ink.append(part);
+      });
+      item.append(eraser, ink);
+    }
+    revealLayer.append(item);
+  });
+  content.append(revealLayer);
+}
+
+function buildScenarioOneMainHeader(content) {
+  const header = document.createElement('div');
+  header.className = 'scenario1-main-header';
+  header.setAttribute('aria-hidden', 'true');
+  header.innerHTML = `
+    <p class="scenario1-main-title">주영이 일기장</p>
+    <p class="scenario1-main-author">1학년 3반 김주영</p>
+    <p class="scenario1-main-hint">- 아래로 스크롤하여 진행 -</p>`;
+  content.append(header);
+}
+
+function createScenarioOneOverlay() {
+  const overlay = document.createElement('section');
+  overlay.className = 'scenario-overlay scenario-one';
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.setAttribute('aria-label', '대원 빌라 시나리오: 주영이 일기장');
+  overlay.innerHTML = `
+    <div class="scenario1-intro" aria-hidden="true">
+      <span class="scenario1-angle-value">0</span><span class="scenario1-degree">°</span>
+    </div>
+    <div class="scenario1-handoff" aria-hidden="true">
+      <p class="scenario1-handoff-title">주영이 일기장</p>
+      <p class="scenario1-handoff-author">1학년 3반 김주영</p>
+      <p class="scenario1-handoff-hint">- 아래로 스크롤하여 진행 -</p>
+    </div>
+    <div class="scenario1-scroll" tabindex="0" aria-label="주영이 일기장 내용">
+      <div class="scenario1-scroll-content">
+        <img class="scenario1-main-art" src="${SCENARIO_ONE_ART_URL}" alt="주영이 일기장" draggable="false" />
+      </div>
+    </div>`;
+
+  const content = overlay.querySelector('.scenario1-scroll-content');
+  buildScenarioOneRevealLayers(content);
+  // The exported full-page SVG contains the same title and author as outlines.
+  // Keep a DOM copy above it so the hand-off can never disappear while Safari is
+  // decoding the large SVG on its first use.
+  buildScenarioOneMainHeader(content);
+
+  const back = document.createElement('button');
+  back.type = 'button';
+  back.className = 'scenario1-back';
+  back.setAttribute('aria-label', '시나리오에서 돌아가기');
+  back.innerHTML = '<span class="scenario1-back-label">돌아가기</span><i class="scenario1-back-line" aria-hidden="true"></i>';
+  content.append(back);
+
+  overlay.addEventListener('pointerdown', (event) => event.stopPropagation());
+  overlay.addEventListener('wheel', (event) => event.stopPropagation(), { passive: true });
+  const scroll = overlay.querySelector('.scenario1-scroll');
+  scroll.addEventListener('scroll', updateScenarioOneReveals, { passive: true });
+  scroll.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0 || event.target.closest('.scenario1-back')) return;
+    event.preventDefault();
+    scenarioOneScrollDrag = { pointerId: event.pointerId, startY: event.clientY, startScrollTop: scroll.scrollTop };
+    scroll.setPointerCapture(event.pointerId);
+    scroll.classList.add('is-dragging');
+  });
+  scroll.addEventListener('pointermove', (event) => {
+    if (!scenarioOneScrollDrag || event.pointerId !== scenarioOneScrollDrag.pointerId) return;
+    scroll.scrollTop = scenarioOneScrollDrag.startScrollTop + scenarioOneScrollDrag.startY - event.clientY;
+  });
+  const stopScrollDrag = (event) => {
+    if (!scenarioOneScrollDrag || (event?.pointerId != null && event.pointerId !== scenarioOneScrollDrag.pointerId)) return;
+    if (scroll.hasPointerCapture(scenarioOneScrollDrag.pointerId)) scroll.releasePointerCapture(scenarioOneScrollDrag.pointerId);
+    scenarioOneScrollDrag = null;
+    scroll.classList.remove('is-dragging');
+  };
+  scroll.addEventListener('pointerup', stopScrollDrag);
+  scroll.addEventListener('pointercancel', stopScrollDrag);
+  scroll.addEventListener('lostpointercapture', stopScrollDrag);
+  back.addEventListener('click', closeScenarioOne);
+  return overlay;
+}
+
+function resetScenarioOne() {
+  clearScenarioOneTimers();
+  const scroll = scenarioOneOverlay.querySelector('.scenario1-scroll');
+  scenarioOneScrollDrag = null;
+  scroll.classList.remove('is-dragging');
+  scroll.scrollTop = 0;
+  scenarioOneOverlay.querySelector('.scenario1-angle-value').textContent = '0';
+  scenarioOneOverlay.querySelectorAll('.scenario1-reveal-item, .scenario1-reveal-ink-part').forEach((item) => {
+    item.classList.remove('is-revealed', 'is-scheduled');
+  });
+  scenarioOneOverlay.classList.remove('is-main-arriving', 'is-main-ready', 'is-closing');
+  scenarioOneOverlay.querySelector('.scenario1-intro').classList.remove('is-leaving');
+}
+
+function animateScenarioOneAngle() {
+  const value = scenarioOneOverlay?.querySelector('.scenario1-angle-value');
+  if (!value) return;
+  const duration = scenarioDuration(SCENARIO_ONE.countDuration);
+  if (!duration) {
+    value.textContent = '31';
+    return;
+  }
+  const startedAt = performance.now();
+  const tick = (now) => {
+    if (!scenarioOneIsOpen || scenarioOneIsClosing) return;
+    const progress = Math.min((now - startedAt) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    value.textContent = String(Math.min(31, Math.floor(31 * eased)));
+    if (progress < 1) scenarioOneCountFrame = window.requestAnimationFrame(tick);
+    else {
+      value.textContent = '31';
+      scenarioOneCountFrame = 0;
+    }
+  };
+  scenarioOneCountFrame = window.requestAnimationFrame(tick);
+}
+
+function revealScenarioOneMain() {
+  if (!scenarioOneIsOpen || scenarioOneIsClosing) return;
+  scenarioOneOverlay.classList.add('is-main-arriving');
+  scenarioOneOverlay.querySelector('.scenario1-intro').classList.add('is-leaving');
+  queueScenarioOne(() => {
+    if (!scenarioOneIsOpen || scenarioOneIsClosing) return;
+    const art = scenarioOneOverlay.querySelector('.scenario1-main-art');
+    const showMain = () => {
+      if (!scenarioOneIsOpen || scenarioOneIsClosing) return;
+      scenarioOneOverlay.classList.add('is-main-ready');
+    };
+    // Do not fade the handoff copy before the underlying full SVG is decoded.
+    // This prevents a blank title/author state on a cold first load in Safari.
+    if (art.complete && art.naturalWidth > 0) showMain();
+    else {
+      art.addEventListener('load', showMain, { once: true });
+      art.addEventListener('error', () => {
+        console.error('Scenario 1 artwork could not be loaded:', art.currentSrc || art.src);
+        // The DOM title/author remain available even if the artwork fails, so do
+        // not keep the user trapped on the transition screen.
+        showMain();
+      }, { once: true });
+    }
+  }, scenarioDuration(SCENARIO_ONE.mainMove));
+}
+
+function updateScenarioOneReveals() {
+  if (!scenarioOneOverlay?.classList.contains('is-main-ready')) return;
+  const scroll = scenarioOneOverlay.querySelector('.scenario1-scroll');
+  const threshold = scroll.scrollTop + 900;
+  const rows = [];
+  [...SCENARIO_ONE_REVEALS]
+    .sort((a, b) => a.top - b.top)
+    .forEach((entry) => {
+      const currentRow = rows.at(-1);
+      if (!currentRow || entry.top - currentRow.top > SCENARIO_ONE_ROW_TOLERANCE) {
+        rows.push({ top: entry.top, entries: [entry] });
+      } else {
+        currentRow.entries.push(entry);
+      }
+    });
+
+  rows
+    .filter((row) => row.top <= threshold)
+    .forEach((row) => {
+      let delay = 0;
+      row.entries
+        .sort((a, b) => a.left - b.left)
+        .forEach((entry) => {
+          const item = scenarioOneOverlay.querySelector(`[data-reveal-id="${entry.id}"]`);
+          if (!item || item.classList.contains('is-scheduled')) return;
+          item.classList.add('is-scheduled');
+          queueScenarioOne(() => item.classList.add('is-revealed'), scenarioDuration(delay));
+          const parts = entry.type === 'text' || entry.type === 'diary'
+            ? [...item.querySelectorAll('.scenario1-reveal-ink-part')]
+            : [];
+          const partDelay = entry.type === 'diary' ? 50 : 30;
+          parts.forEach((part, index) => {
+            queueScenarioOne(() => part.classList.add('is-revealed'), scenarioDuration(delay + index * partDelay));
+          });
+          // A full diary paragraph can still reveal word-by-word while nearby
+          // vectors in the same visual row begin on the specified 50ms stagger.
+          delay += entry.type === 'diary'
+            ? SCENARIO_ONE.revealStagger
+            : Math.max(0, parts.length - 1) * partDelay + SCENARIO_ONE.revealStagger;
+        });
+    });
+}
+
+function openScenarioOne() {
+  if (scenarioOneIsOpen || scenarioOneIsClosing || isAnyScenarioOpen()) return;
+  if (!scenarioOneOverlay) {
+    scenarioOneOverlay = createScenarioOneOverlay();
+    uiLayer.append(scenarioOneOverlay);
+  }
+  scenarioOneIsOpen = true;
+  stopPassiveMotion();
+  setScenarioInteractionLock(true);
+  resetScenarioOne();
+  scenarioOneOverlay.setAttribute('aria-hidden', 'false');
+  // Force the off-screen initial transform to be committed before Move In begins.
+  void scenarioOneOverlay.offsetWidth;
+  scenarioOneOverlay.classList.add('is-open');
+
+  const introMove = scenarioDuration(SCENARIO_ONE.introMove);
+  const countStart = introMove + scenarioDuration(SCENARIO_ONE.introPause);
+  const mainStart = countStart + scenarioDuration(SCENARIO_ONE.countDuration) + scenarioDuration(SCENARIO_ONE.beforeMainPause);
+  queueScenarioOne(animateScenarioOneAngle, countStart);
+  queueScenarioOne(revealScenarioOneMain, mainStart);
+}
+
+function closeScenarioOne() {
+  if (!scenarioOneIsOpen || scenarioOneIsClosing) return;
+  scenarioOneIsClosing = true;
+  clearScenarioOneTimers();
+  scenarioOneOverlay.classList.remove('is-open');
+  scenarioOneOverlay.classList.add('is-closing');
+  queueScenarioOne(() => {
+    scenarioOneOverlay.classList.remove('is-closing', 'is-main-arriving', 'is-main-ready');
+    scenarioOneOverlay.setAttribute('aria-hidden', 'true');
+    scenarioOneIsOpen = false;
+    scenarioOneIsClosing = false;
+    setScenarioInteractionLock(false);
+  }, scenarioDuration(SCENARIO_ONE.introMove));
+}
+
+function isAnyScenarioOpen() {
+  return scenarioOneIsOpen || scenarioTwoIsOpen || activeEmbeddedScenarioId !== null;
+}
+
+function clearScenarioTwoTimers() {
+  scenarioTwoTimers.forEach((timer) => window.clearTimeout(timer));
+  scenarioTwoTimers = [];
+  if (scenarioTwoCountFrame) window.cancelAnimationFrame(scenarioTwoCountFrame);
+  scenarioTwoCountFrame = 0;
+}
+
+function queueScenarioTwo(callback, delay) {
+  const timer = window.setTimeout(() => {
+    scenarioTwoTimers = scenarioTwoTimers.filter((candidate) => candidate !== timer);
+    callback();
+  }, delay);
+  scenarioTwoTimers.push(timer);
+  return timer;
+}
+
+function postScenarioTwoArt(action, scrollTop = 0) {
+  const art = scenarioTwoOverlay?.querySelector('.scenario2-main-art');
+  art?.contentWindow?.postMessage({ channel: 'theta-scenario-2', action, scrollTop }, '*');
+}
+
+function resetScenarioTwoArt() {
+  postScenarioTwoArt('reset');
+}
+
+function showScenarioTwoMain() {
+  if (!scenarioTwoIsOpen || scenarioTwoIsClosing) return;
+  scenarioTwoOverlay.classList.add('is-main-ready');
+  updateScenarioTwoReveals();
+}
+
+function createScenarioTwoOverlay() {
+  const overlay = document.createElement('section');
+  overlay.className = 'scenario-overlay scenario-two';
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.setAttribute('aria-label', '우성현대아파트 시나리오: 현대아파트의 엘리베이터는 왜 움직이지 않는가');
+  overlay.innerHTML = `
+    <div class="scenario2-intro" aria-hidden="true">
+      <i class="scenario2-intro-shell"></i>
+      <span class="scenario2-count"><span class="scenario2-count-value">0</span><span class="scenario2-count-unit">°</span></span>
+    </div>
+    <div class="scenario2-scroll" tabindex="0" aria-label="현대아파트의 엘리베이터는 왜 움직이지 않는가 내용">
+      <div class="scenario2-scroll-content">
+        <object class="scenario2-main-art" data="${SCENARIO_TWO_ART_URL}" type="image/svg+xml" aria-label="현대아파트의 엘리베이터는 왜 움직이지 않는가"></object>
+      </div>
+    </div>`;
+
+  const content = overlay.querySelector('.scenario2-scroll-content');
+  const art = content.querySelector('.scenario2-main-art');
+  const syncScenarioTwoArt = () => {
+    resetScenarioTwoArt();
+    if (scenarioTwoMainRequested) showScenarioTwoMain();
+  };
+  art.addEventListener('load', syncScenarioTwoArt);
+  window.addEventListener('message', (event) => {
+    if (event.data?.type !== 'theta-scenario-2-ready' || event.source !== art.contentWindow) return;
+    syncScenarioTwoArt();
+  });
+
+  const back = document.createElement('button');
+  back.type = 'button';
+  back.className = 'scenario2-back';
+  back.setAttribute('aria-label', '시나리오에서 돌아가기');
+  back.innerHTML = '<span class="scenario2-back-label">돌아가기</span><i class="scenario2-back-line" aria-hidden="true"></i>';
+  content.append(back);
+
+  overlay.addEventListener('pointerdown', (event) => event.stopPropagation());
+  overlay.addEventListener('wheel', (event) => event.stopPropagation(), { passive: true });
+  const scroll = overlay.querySelector('.scenario2-scroll');
+  scroll.addEventListener('scroll', updateScenarioTwoReveals, { passive: true });
+  scroll.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0 || event.target.closest('.scenario2-back')) return;
+    event.preventDefault();
+    scenarioTwoScrollDrag = { pointerId: event.pointerId, startY: event.clientY, startScrollTop: scroll.scrollTop };
+    scroll.setPointerCapture(event.pointerId);
+    scroll.classList.add('is-dragging');
+  });
+  scroll.addEventListener('pointermove', (event) => {
+    if (!scenarioTwoScrollDrag || event.pointerId !== scenarioTwoScrollDrag.pointerId) return;
+    scroll.scrollTop = scenarioTwoScrollDrag.startScrollTop + scenarioTwoScrollDrag.startY - event.clientY;
+  });
+  const stopScrollDrag = (event) => {
+    if (!scenarioTwoScrollDrag || (event?.pointerId != null && event.pointerId !== scenarioTwoScrollDrag.pointerId)) return;
+    if (scroll.hasPointerCapture(scenarioTwoScrollDrag.pointerId)) scroll.releasePointerCapture(scenarioTwoScrollDrag.pointerId);
+    scenarioTwoScrollDrag = null;
+    scroll.classList.remove('is-dragging');
+  };
+  scroll.addEventListener('pointerup', stopScrollDrag);
+  scroll.addEventListener('pointercancel', stopScrollDrag);
+  scroll.addEventListener('lostpointercapture', stopScrollDrag);
+  back.addEventListener('click', closeScenarioTwo);
+  return overlay;
+}
+
+function resetScenarioTwo() {
+  clearScenarioTwoTimers();
+  scenarioTwoMainRequested = false;
+  const scroll = scenarioTwoOverlay.querySelector('.scenario2-scroll');
+  scenarioTwoScrollDrag = null;
+  scroll.classList.remove('is-dragging');
+  scroll.scrollTop = 0;
+  scenarioTwoOverlay.querySelector('.scenario2-count-value').textContent = '0';
+  resetScenarioTwoArt();
+  scenarioTwoOverlay.classList.remove('is-counting', 'is-main-ready', 'is-closing');
+}
+
+function animateScenarioTwoAngle() {
+  const count = scenarioTwoOverlay?.querySelector('.scenario2-count');
+  if (!count) return;
+  const duration = scenarioDuration(SCENARIO_TWO.countDuration);
+  scenarioTwoOverlay.classList.add('is-counting');
+  if (!duration) {
+    count.querySelector('.scenario2-count-value').textContent = '75';
+    return;
+  }
+  const startedAt = performance.now();
+  const tick = (now) => {
+    if (!scenarioTwoIsOpen || scenarioTwoIsClosing) return;
+    const progress = Math.min((now - startedAt) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    count.querySelector('.scenario2-count-value').textContent = String(Math.min(75, Math.floor(75 * eased)));
+    if (progress < 1) scenarioTwoCountFrame = window.requestAnimationFrame(tick);
+    else {
+      count.querySelector('.scenario2-count-value').textContent = '75';
+      scenarioTwoCountFrame = 0;
+    }
+  };
+  scenarioTwoCountFrame = window.requestAnimationFrame(tick);
+}
+
+function revealScenarioTwoMain() {
+  if (!scenarioTwoIsOpen || scenarioTwoIsClosing) return;
+  scenarioTwoMainRequested = true;
+  resetScenarioTwoArt();
+  showScenarioTwoMain();
+}
+
+function updateScenarioTwoReveals() {
+  if (!scenarioTwoOverlay?.classList.contains('is-main-ready')) return;
+  const scroll = scenarioTwoOverlay.querySelector('.scenario2-scroll');
+  postScenarioTwoArt('reveal', scroll.scrollTop);
+}
+
+function openScenarioTwo() {
+  if (scenarioTwoIsOpen || scenarioTwoIsClosing || isAnyScenarioOpen()) return;
+  if (!scenarioTwoOverlay) {
+    scenarioTwoOverlay = createScenarioTwoOverlay();
+    uiLayer.append(scenarioTwoOverlay);
+  }
+  scenarioTwoIsOpen = true;
+  stopPassiveMotion();
+  setScenarioInteractionLock(true);
+  resetScenarioTwo();
+  scenarioTwoOverlay.setAttribute('aria-hidden', 'false');
+  void scenarioTwoOverlay.offsetWidth;
+  scenarioTwoOverlay.classList.add('is-open');
+
+  const introMove = scenarioDuration(SCENARIO_TWO.introMove);
+  const countStart = introMove + scenarioDuration(SCENARIO_TWO.introPause);
+  const mainStart = countStart + scenarioDuration(SCENARIO_TWO.countDuration) + scenarioDuration(SCENARIO_TWO.beforeMainPause);
+  queueScenarioTwo(animateScenarioTwoAngle, countStart);
+  queueScenarioTwo(revealScenarioTwoMain, mainStart);
+}
+
+function closeScenarioTwo() {
+  if (!scenarioTwoIsOpen || scenarioTwoIsClosing) return;
+  scenarioTwoIsClosing = true;
+  clearScenarioTwoTimers();
+  scenarioTwoOverlay.classList.remove('is-open');
+  scenarioTwoOverlay.classList.add('is-closing');
+  queueScenarioTwo(() => {
+    scenarioTwoOverlay.classList.remove('is-closing', 'is-counting', 'is-main-ready');
+    scenarioTwoOverlay.setAttribute('aria-hidden', 'true');
+    scenarioTwoIsOpen = false;
+    scenarioTwoIsClosing = false;
+    setScenarioInteractionLock(false);
+  }, scenarioDuration(SCENARIO_TWO.introMove));
+}
+
+function createEmbeddedScenarioOverlay(config) {
+  const overlay = document.createElement('section');
+  overlay.className = `scenario-overlay scenario-embedded scenario-embedded-${config.id}`;
+  overlay.dataset.embeddedScenario = String(config.id);
+  overlay.style.width = `${config.width}px`;
+  overlay.setAttribute('aria-hidden', 'true');
+  overlay.setAttribute('aria-label', config.label);
+
+  const frame = document.createElement('iframe');
+  frame.className = 'scenario-embedded-frame';
+  frame.title = config.label;
+  frame.setAttribute('scrolling', 'no');
+  frame.setAttribute('tabindex', '0');
+  overlay.append(frame);
+  overlay.addEventListener('pointerdown', (event) => event.stopPropagation());
+  overlay.addEventListener('wheel', (event) => event.stopPropagation(), { passive: true });
+  return overlay;
+}
+
+function resetEmbeddedScenarioFrame(overlay, config) {
+  const frame = overlay.querySelector('.scenario-embedded-frame');
+  // A new query value produces a fresh document so the standalone scenario's
+  // own intro/count sequence runs from its first frame on every opening.
+  frame.src = `./${config.page}?embed=1&run=${Date.now()}`;
+}
+
+function openEmbeddedScenario(id) {
+  const config = EMBEDDED_SCENARIOS[id];
+  if (!config || embeddedScenarioClosing || isAnyScenarioOpen()) return;
+  let overlay = embeddedScenarioOverlays.get(id);
+  if (!overlay) {
+    overlay = createEmbeddedScenarioOverlay(config);
+    embeddedScenarioOverlays.set(id, overlay);
+    uiLayer.append(overlay);
+  }
+
+  activeEmbeddedScenarioId = id;
+  stopPassiveMotion();
+  setScenarioInteractionLock(true);
+  resetEmbeddedScenarioFrame(overlay, config);
+  overlay.setAttribute('aria-hidden', 'false');
+  // Commit the common off-screen state before the 1200ms Move In transition.
+  void overlay.offsetWidth;
+  overlay.classList.add('is-open');
+}
+
+function closeEmbeddedScenario(id = activeEmbeddedScenarioId, { immediate = false } = {}) {
+  if (id == null || id !== activeEmbeddedScenarioId || embeddedScenarioClosing) return;
+  const overlay = embeddedScenarioOverlays.get(id);
+  if (!overlay) return;
+  window.clearTimeout(embeddedScenarioCloseTimer);
+  embeddedScenarioClosing = true;
+  overlay.classList.remove('is-open');
+
+  const finish = () => {
+    overlay.classList.remove('is-closing');
+    overlay.setAttribute('aria-hidden', 'true');
+    activeEmbeddedScenarioId = null;
+    embeddedScenarioClosing = false;
+    setScenarioInteractionLock(false);
+  };
+
+  if (immediate) {
+    finish();
+    return;
+  }
+
+  overlay.classList.add('is-closing');
+  embeddedScenarioCloseTimer = window.setTimeout(finish, scenarioDuration(SCENARIO_ONE.introMove));
+}
+
+window.addEventListener('message', (event) => {
+  const { data } = event;
+  if (data?.channel !== 'theta-scenario-embedded' || data.action !== 'close') return;
+  const id = Number(data.id);
+  const overlay = embeddedScenarioOverlays.get(id);
+  if (!overlay || overlay.querySelector('.scenario-embedded-frame')?.contentWindow !== event.source) return;
+  closeEmbeddedScenario(id);
+});
 
 function setBuildingLayerAccessibility(root, interactive) {
   const layer = root.querySelector('.building-layer');
@@ -347,11 +1078,42 @@ function queueIntro(next, delay) {
   introTimers.push(window.setTimeout(next, reducedMotion ? 1 : delay));
 }
 
+function stopIntroPhotos() {
+  if (introPhotoTimer) window.clearInterval(introPhotoTimer);
+  introPhotoTimer = 0;
+}
+
+function shuffledIntroPhotos() {
+  const photos = [...INTRO_PHOTOS];
+  for (let index = photos.length - 1; index > 0; index -= 1) {
+    const nextIndex = Math.floor(Math.random() * (index + 1));
+    [photos[index], photos[nextIndex]] = [photos[nextIndex], photos[index]];
+  }
+  return photos;
+}
+
+function startIntroPhotos() {
+  if (!introPhotoFrame) return;
+  stopIntroPhotos();
+  introPhotoStage?.classList.remove('is-dissolving');
+  const photos = shuffledIntroPhotos();
+  let photoIndex = 0;
+  introPhotoFrame.src = photos[photoIndex];
+  introPhotoTimer = window.setInterval(() => {
+    photoIndex = (photoIndex + 1) % photos.length;
+    introPhotoFrame.src = photos[photoIndex];
+  }, INTRO.prelude.photoInterval);
+}
+
 function getIntroScreen(name) {
   return introScreens.find((screen) => screen.dataset.introScreen === name);
 }
 
 function resetIntroScreen(screen) {
+  if (screen.dataset.introScreen === 'page5') {
+    stopIntroPhotos();
+    introPhotoStage?.classList.remove('is-dissolving');
+  }
   screen.classList.remove('is-active', 'is-entering', 'is-dissolve-target', 'is-smart-enter', 'is-from-axes', 'is-from-about-transition', 'is-about-hovered', 'is-map-hovered');
   screen.style.removeProperty('--intro-motion-duration');
   screen.style.removeProperty('--intro-motion-easing');
@@ -449,6 +1211,44 @@ function beginIntroSequence() {
   });
 }
 
+function beginPreludeSequence() {
+  if (introTransitioning) return;
+  dissolveIntroTo('page1', INTRO.prelude.landingDissolve, () => {
+    queueIntro(() => {
+      dissolveIntroTo('page2', INTRO.prelude.dissolve, () => {
+        queueIntro(() => {
+          dissolveIntroTo('page3', INTRO.prelude.dissolve, () => {
+            queueIntro(() => {
+              dissolveIntroTo('page4', INTRO.prelude.dissolve, () => {
+                queueIntro(() => {
+                  dissolveIntroTo('page5', INTRO.prelude.dissolve, () => {
+                    startIntroPhotos();
+                    queueIntro(() => {
+                      introPhotoStage?.classList.add('is-dissolving');
+                      queueIntro(() => {
+                        stopIntroPhotos();
+                        showIntroScreen('preludeBlack');
+                        queueIntro(() => dissolveIntroTo('page6', INTRO.prelude.page6Dissolve), INTRO.prelude.blackHold);
+                      }, INTRO.prelude.photoDissolve);
+                    }, (INTRO_PHOTOS.length - 1) * INTRO.prelude.photoInterval + INTRO.prelude.photoLastHold);
+                  });
+                }, INTRO.prelude.hold);
+              });
+            }, INTRO.prelude.hold);
+          });
+        }, INTRO.prelude.hold);
+      });
+    }, INTRO.prelude.hold);
+  });
+}
+
+function skipPreludeToPage6() {
+  clearIntroTimers();
+  stopIntroPhotos();
+  introTransitioning = false;
+  showIntroScreen('page6', { clearTimers: false });
+}
+
 function setPage7Hover(kind) {
   const page7 = getIntroScreen('page7');
   if (!page7 || !page7.classList.contains('is-active') || introTransitioning) return;
@@ -502,26 +1302,19 @@ function positionForWorldCenter(worldPoint, atZoom, scale = displayScale) {
 
 function applyLandingScale() {
   const scale = getScale();
-  const landingZoom = 1.05;
-  const landingWidth = 2339 * scale * landingZoom;
-  const landingHeight = 2163.08 * scale * landingZoom;
   const borderCenter = {
     x: MAP_BORDER.x + MAP_BORDER.width / 2,
     y: MAP_BORDER.y + MAP_BORDER.height / 2,
   };
   // Center the landing composition on the white Border of the main map area.
-  landingMap.style.left = `${window.innerWidth / 2 - (borderCenter.x / FIGMA.mapWidth) * landingWidth}px`;
-  landingMap.style.top = `${window.innerHeight / 2 - (borderCenter.y / FIGMA.mapHeight) * landingHeight}px`;
-  landingMap.style.width = `${landingWidth}px`;
-  landingMap.style.height = `${landingHeight}px`;
+  // The map element itself is always the same world-sized rectangle; only its
+  // composited transform changes between landing and exploration.
+  landingMap.style.transform = `translate3d(${window.innerWidth / 2 - borderCenter.x * scale * LANDING_CONTENT_ZOOM}px, ${window.innerHeight / 2 - borderCenter.y * scale * LANDING_CONTENT_ZOOM}px, 0) scale(${scale * LANDING_CONTENT_ZOOM})`;
 }
 
 function applyLandingDestinationGeometry(scale = getScale()) {
   const mapHome = positionForWorldCenter(MAP_ORIGIN, INITIAL_ZOOM, scale);
-  landingMap.style.left = `${mapHome.x * scale}px`;
-  landingMap.style.top = `${mapHome.y * scale}px`;
-  landingMap.style.width = `${FIGMA.mapWidth * scale * INITIAL_ZOOM}px`;
-  landingMap.style.height = `${FIGMA.mapHeight * scale * INITIAL_ZOOM}px`;
+  landingMap.style.transform = `translate3d(${mapHome.x * scale}px, ${mapHome.y * scale}px, 0) scale(${scale * INITIAL_ZOOM})`;
 }
 
 function applyCanvasSize() {
@@ -532,16 +1325,18 @@ function applyCanvasSize() {
   // to the actual viewport. This lets the right overlay remain flush on wide screens.
   uiLayer.style.width = `${window.innerWidth / displayScale}px`;
   uiLayer.style.height = `${window.innerHeight / displayScale}px`;
-  canvas.style.width = `${FIGMA.mapWidth * displayScale * zoom}px`;
-  canvas.style.height = `${FIGMA.mapHeight * displayScale * zoom}px`;
   mapPosition = constrainPosition(positionForWorldCenter(worldCenter, zoom), zoom);
   applyMapPosition();
 }
 
 function applyMapPosition() {
-  canvas.style.transform = `translate(${mapPosition.x * displayScale}px, ${mapPosition.y * displayScale}px)`;
+  // Keep the SVG layout at its native world dimensions. Resizing this 8k map on
+  // every wheel event forces Safari to re-rasterize every layer, which is notably
+  // expensive on the 5K iMac. Position and zoom now share one composited transform.
+  canvas.style.transform = `translate3d(${mapPosition.x * displayScale}px, ${mapPosition.y * displayScale}px, 0) scale(${displayScale * zoom})`;
   updateCoordinates();
   updateMapDetailLayers();
+  updateMapScaleIndicator();
 }
 
 function worldCenterForPosition(position, atZoom = zoom) {
@@ -579,6 +1374,18 @@ function updateMapDetailLayers() {
   mapArt?.classList.toggle('is-symbols-visible', zoom >= SYMBOLS_ZOOM_THRESHOLD);
 }
 
+function updateMapScaleIndicator() {
+  if (!mapScaleIndicator || !mapScaleValue) return;
+  const level = MAP_SCALE.levels.find(({ until }) => zoom < until)
+    || MAP_SCALE.levels[MAP_SCALE.levels.length - 1];
+  const meters = level.meters;
+  const worldUnitsPerMeter = MAP_SCALE.referenceWorldLength / MAP_SCALE.referenceMeters;
+  const rulerWidth = Math.max(1, meters * worldUnitsPerMeter * zoom);
+  mapScaleIndicator.style.setProperty('--map-scale-ruler-width', `${rulerWidth}px`);
+  mapScaleValue.textContent = `${meters}m`;
+  mapScaleIndicator.setAttribute('aria-label', `지도 축척: ${meters}미터`);
+}
+
 function requestMotionFrame() {
   if (!motionFrame) motionFrame = window.requestAnimationFrame(runMotionFrame);
 }
@@ -586,8 +1393,10 @@ function requestMotionFrame() {
 function stopPassiveMotion() {
   dragVelocity = { x: 0, y: 0 };
   zoomVelocity = 0;
+  pendingZoomDelta = 0;
   zoomFocus = null;
   cameraTween = null;
+  zoomTween = null;
 }
 
 function animateMapTo(position) {
@@ -656,7 +1465,7 @@ function closeBuildingOverlays({ clearSelection = true } = {}) {
   if (clearSelection) setActiveBuilding(null);
 }
 
-function zoomAt(point, zoomDelta) {
+function zoomAt(point, zoomDelta, shouldRender = true) {
   const boundedZoom = Math.min(ZOOM.max, Math.max(ZOOM.min, zoom + zoomDelta));
   if (boundedZoom === zoom) return false;
   const zoomRatio = boundedZoom / zoom;
@@ -665,8 +1474,22 @@ function zoomAt(point, zoomDelta) {
     y: point.y - (point.y - mapPosition.y) * zoomRatio,
   }, boundedZoom);
   zoom = boundedZoom;
-  applyCanvasSize();
+  if (shouldRender) applyMapPosition();
   return true;
+}
+
+function animateZoomTo(targetZoom, focus = getViewportCenter()) {
+  const boundedZoom = Math.min(ZOOM.max, Math.max(ZOOM.min, targetZoom));
+  if (Math.abs(boundedZoom - zoom) < .0001) return;
+  stopPassiveMotion();
+  zoomTween = {
+    startedAt: performance.now(),
+    fromZoom: zoom,
+    toZoom: boundedZoom,
+    fromPosition: { ...mapPosition },
+    focus: { ...focus },
+  };
+  requestMotionFrame();
 }
 
 function enterMapUi() {
@@ -699,8 +1522,20 @@ function runMotionFrame(timestamp) {
     };
     applyMapPosition();
     if (progress === 1) cameraTween = null;
+  } else if (zoomTween) {
+    const progress = Math.min((timestamp - zoomTween.startedAt) / MOTION.zoom.controlDuration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const nextZoom = zoomTween.fromZoom + (zoomTween.toZoom - zoomTween.fromZoom) * eased;
+    const zoomRatio = nextZoom / zoomTween.fromZoom;
+    zoom = nextZoom;
+    mapPosition = constrainPosition({
+      x: zoomTween.focus.x - (zoomTween.focus.x - zoomTween.fromPosition.x) * zoomRatio,
+      y: zoomTween.focus.y - (zoomTween.focus.y - zoomTween.fromPosition.y) * zoomRatio,
+    }, zoom);
+    applyMapPosition();
+    if (progress === 1) zoomTween = null;
   } else {
-    let moved = false;
+    let needsRender = false;
     if (Math.hypot(dragVelocity.x, dragVelocity.y) >= MOTION.drag.stopVelocity) {
       const nextPosition = constrainPosition({
         x: mapPosition.x + dragVelocity.x * deltaTime,
@@ -713,26 +1548,34 @@ function runMotionFrame(timestamp) {
       dragVelocity.x *= damping;
       dragVelocity.y *= damping;
       if (hitBoundary) dragVelocity = { x: 0, y: 0 };
-      moved = true;
+      needsRender = true;
     } else {
       dragVelocity = { x: 0, y: 0 };
     }
 
+    // Wheel events only enqueue a zoom delta. Applying it here guarantees one
+    // map transform write per display frame even for high-frequency trackpads.
+    if (pendingZoomDelta && zoomFocus) {
+      const queuedDelta = pendingZoomDelta;
+      pendingZoomDelta = 0;
+      needsRender = zoomAt(zoomFocus, queuedDelta, false) || needsRender;
+    }
+
     if (Math.abs(zoomVelocity) >= MOTION.zoom.stopVelocity && zoomFocus) {
-      const zoomed = zoomAt(zoomFocus, zoomVelocity * deltaTime);
+      const zoomed = zoomAt(zoomFocus, zoomVelocity * deltaTime, false);
       const atLimit = (zoom === ZOOM.min && zoomVelocity < 0) || (zoom === ZOOM.max && zoomVelocity > 0);
       zoomVelocity *= Math.exp(-MOTION.zoom.damping * deltaTime);
       if (!zoomed || atLimit) zoomVelocity = 0;
-      moved = true;
+      needsRender = zoomed || needsRender;
     } else {
       zoomVelocity = 0;
       zoomFocus = null;
     }
 
-    if (moved) applyMapPosition();
+    if (needsRender) applyMapPosition();
   }
 
-  if (cameraTween || Math.hypot(dragVelocity.x, dragVelocity.y) >= MOTION.drag.stopVelocity || Math.abs(zoomVelocity) >= MOTION.zoom.stopVelocity) {
+  if (cameraTween || zoomTween || Math.hypot(dragVelocity.x, dragVelocity.y) >= MOTION.drag.stopVelocity || Math.abs(zoomVelocity) >= MOTION.zoom.stopVelocity || pendingZoomDelta) {
     requestMotionFrame();
   } else {
     motionLastTime = 0;
@@ -785,6 +1628,9 @@ function returnToLanding() {
     return;
   }
   if (mapPage.classList.contains('is-hidden')) return;
+  if (scenarioOneIsOpen) closeScenarioOne();
+  if (scenarioTwoIsOpen) closeScenarioTwo();
+  if (activeEmbeddedScenarioId !== null) closeEmbeddedScenario(activeEmbeddedScenarioId, { immediate: true });
   closeIndexOverlay();
   closeBuildingOverlays();
   stopPassiveMotion();
@@ -805,11 +1651,46 @@ function returnToLanding() {
   applyLandingScale();
 }
 
+function returnToIntroSelection() {
+  if (landingTransitioning || mapBackTransitioning || mapPage.classList.contains('is-hidden')) return;
+  mapBackTransitioning = true;
+  stopPassiveMotion();
+  clearIntroTimers();
+
+  // Keep the live map mounted for the complete dissolve. The selection screen is
+  // prepared underneath it, preventing a map-to-landing flash during the handoff.
+  showIntroScreen('page7', { clearTimers: false });
+  intro.classList.remove('is-hidden', 'is-handing-off');
+  intro.style.setProperty('--map-return-duration', `${INTRO.mapBack.duration}ms`);
+  intro.style.setProperty('--map-return-easing', INTRO.mapBack.easing);
+  mapPage.style.setProperty('--map-return-duration', `${INTRO.mapBack.duration}ms`);
+  mapPage.style.setProperty('--map-return-easing', INTRO.mapBack.easing);
+  intro.classList.add('is-map-return-target');
+
+  window.requestAnimationFrame(() => {
+    intro.classList.add('is-map-return-entering');
+    mapPage.classList.add('is-returning-to-selection');
+  });
+
+  queueIntro(() => {
+    // Reuse the existing cleanup so the same map node is ready when Map is picked again.
+    returnToLanding();
+    landing.classList.add('is-hidden');
+    mapPage.classList.remove('is-returning-to-selection');
+    mapPage.style.removeProperty('--map-return-duration');
+    mapPage.style.removeProperty('--map-return-easing');
+    intro.classList.remove('is-map-return-target', 'is-map-return-entering');
+    intro.style.removeProperty('--map-return-duration');
+    intro.style.removeProperty('--map-return-easing');
+    mapBackTransitioning = false;
+  }, INTRO.mapBack.duration);
+}
+
 enterMap.addEventListener('click', () => {
   if (beginLandingTransition()) window.history.pushState({ thetaScreen: 'map' }, '', window.location.href);
 });
 landingMap.addEventListener('transitionend', (event) => {
-  if (event.target !== landingMap || event.propertyName !== 'width') return;
+  if (event.target !== landingMap || event.propertyName !== 'transform') return;
   completeLandingTransition();
   if (returnRequestedDuringTransition) {
     returnRequestedDuringTransition = false;
@@ -817,7 +1698,9 @@ landingMap.addEventListener('transitionend', (event) => {
   }
 });
 window.addEventListener('popstate', returnToLanding);
+introLandingStart.addEventListener('click', beginPreludeSequence);
 introStart.addEventListener('click', beginIntroSequence);
+introSkipButtons.forEach((button) => button.addEventListener('click', skipPreludeToPage6));
 aboutChoice.addEventListener('pointerenter', () => setPage7Hover('about'));
 aboutChoice.addEventListener('pointerleave', () => setPage7Hover(null));
 aboutChoice.addEventListener('focus', () => setPage7Hover('about'));
@@ -831,6 +1714,16 @@ mapChoice.addEventListener('click', enterExistingLanding);
 aboutBack.addEventListener('click', () => {
   if (introTransitioning) return;
   dissolveIntroTo('page7', INTRO.aboutBack);
+});
+mapBack.addEventListener('click', returnToIntroSelection);
+zoomReset.addEventListener('click', () => {
+  if (!isAnyScenarioOpen()) animateZoomTo(INITIAL_ZOOM);
+});
+zoomIn.addEventListener('click', () => {
+  if (!isAnyScenarioOpen()) animateZoomTo(zoom + MAP_CONTROLS.zoomStep);
+});
+zoomOut.addEventListener('click', () => {
+  if (!isAnyScenarioOpen()) animateZoomTo(zoom - MAP_CONTROLS.zoomStep);
 });
 indexTrigger.addEventListener('click', () => indexOverlay.classList.contains('is-open') ? closeIndexOverlay() : openIndex());
 indexTrigger.addEventListener('pointerenter', () => {
@@ -853,6 +1746,7 @@ indexRows.forEach((row) => {
 indexOverlay.addEventListener('pointerdown', (event) => event.stopPropagation());
 
 viewport.addEventListener('pointerdown', (event) => {
+  if (isAnyScenarioOpen()) return;
   if (event.target.closest('button')) return;
   stopPassiveMotion();
   if (activeBuildingId != null) closeBuildingOverlays();
@@ -867,6 +1761,7 @@ viewport.addEventListener('pointerdown', (event) => {
   viewport.classList.add('is-dragging');
 });
 viewport.addEventListener('pointermove', (event) => {
+  if (isAnyScenarioOpen()) return;
   if (!drag) return;
   const now = performance.now();
   const elapsed = Math.max(now - drag.lastTime, 1);
@@ -904,16 +1799,25 @@ viewport.addEventListener('pointerup', stopDrag);
 viewport.addEventListener('pointercancel', stopDrag);
 viewport.addEventListener('lostpointercapture', stopDrag);
 viewport.addEventListener('wheel', (event) => {
+  if (isAnyScenarioOpen()) {
+    event.preventDefault();
+    return;
+  }
   event.preventDefault();
   cameraTween = null;
+  zoomTween = null;
   dragVelocity = { x: 0, y: 0 };
   const delta = normalizeWheelDelta(event);
   if (!delta) return;
   const impulse = -delta * MOTION.zoom.wheelImpulse;
-  if (zoomVelocity && Math.sign(zoomVelocity) !== Math.sign(impulse)) zoomVelocity = 0;
+  if (zoomVelocity && Math.sign(zoomVelocity) !== Math.sign(impulse)) {
+    zoomVelocity = 0;
+    pendingZoomDelta = 0;
+  }
   zoomVelocity = Math.max(-MOTION.zoom.maxVelocity, Math.min(MOTION.zoom.maxVelocity, zoomVelocity + impulse));
   zoomFocus = { x: event.clientX / displayScale, y: event.clientY / displayScale };
-  zoomAt(zoomFocus, -delta * MOTION.zoom.immediateFactor);
+  const directDelta = -delta * MOTION.zoom.immediateFactor;
+  pendingZoomDelta = Math.max(-MOTION.zoom.maxQueuedDelta, Math.min(MOTION.zoom.maxQueuedDelta, pendingZoomDelta + directDelta));
   requestMotionFrame();
 }, { passive: false });
 
