@@ -3,6 +3,7 @@ const STAGE = document.querySelector('.scenario7-stage');
 const STORY = document.querySelector('.scenario7-story');
 const COUNT = document.querySelector('[data-scenario7-count]');
 const BACK = document.querySelector('.scenario7-back');
+const IS_EMBEDDED = new URLSearchParams(window.location.search).get('embed') === '1';
 
 const DESIGN = { width: 1920, height: 1080 };
 const INTRO_TARGET = 40;
@@ -121,6 +122,10 @@ STORY.addEventListener('click', advanceStory);
 
 BACK.addEventListener('click', (event) => {
   event.stopPropagation();
+  if (IS_EMBEDDED && window.parent !== window) {
+    window.parent.postMessage({ channel: 'theta-scenario-embedded', action: 'close', id: 7 }, '*');
+    return;
+  }
   const closeEvent = new CustomEvent('theta:scenario7:close', { cancelable: true });
   if (!window.dispatchEvent(closeEvent)) return;
 

@@ -190,6 +190,7 @@ const SCENARIO_TWO_ART_URL = new URL('./scenario/scenario-2/S2_Main-Full.svg', w
 const EMBEDDED_SCENARIOS = {
   5: { id: 5, page: 'scenario-5.html', width: 1500, label: '힐스테이트 방안 센트럴 시나리오' },
   6: { id: 6, page: 'scenario-6.html', width: 1500, label: '방안근린공원 시나리오' },
+  7: { id: 7, page: 'scenario-7.html', width: 1500, label: '비에이원시스템 시나리오' },
   11: { id: 11, page: 'scenario-11.html', width: 1230, label: '방안 제4재정비촉진구역 시나리오' },
 };
 // Values below come from the Figma prototype reactions (not visual estimates).
